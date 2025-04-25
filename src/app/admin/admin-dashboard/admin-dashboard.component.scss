@@ -1,17 +1,14 @@
 .admin-dashboard {
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
   
   .admin-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
     
     h1 {
       margin: 0;
-      font-size: 1.8rem;
       color: #333;
     }
     
@@ -22,45 +19,11 @@
     }
   }
   
-  // Styles pour les onglets de navigation
-  .admin-tabs {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #dee2e6;
-    
-    .tab-btn {
-      padding: 10px 20px;
-      background: none;
-      border: none;
-      border-bottom: 3px solid transparent;
-      font-size: 16px;
-      font-weight: 500;
-      color: #6c757d;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-right: 10px;
-      
-      &:hover {
-        color: #007bff;
-      }
-      
-      &.active {
-        color: #007bff;
-        border-bottom-color: #007bff;
-      }
-      
-      i {
-        margin-right: 8px;
-      }
-    }
-  }
-  
   .admin-content {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    margin-bottom: 20px;
     
     .header-section {
       display: flex;
@@ -104,106 +67,10 @@
         margin-right: 5px;
       }
     }
-    
-    // Styles pour la vue calendrier
-    &.calendar-view {
-      .calendar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        
-        h2 {
-          margin: 0;
-          color: #333;
-        }
-        
-        .calendar-navigation {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          
-          .current-month {
-            font-size: 1.2rem;
-            font-weight: 500;
-            margin: 0;
-            min-width: 180px;
-            text-align: center;
-          }
-        }
-      }
-      
-      .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 5px;
-        
-        .weekday {
-          text-align: center;
-          font-weight: 600;
-          padding: 10px;
-          background-color: #f8f9fa;
-          border-radius: 4px;
-        }
-        
-        .day {
-          min-height: 100px;
-          border: 1px solid #e9ecef;
-          border-radius: 4px;
-          padding: 5px;
-          background-color: #fff;
-          
-          .day-header {
-            text-align: right;
-            font-weight: 500;
-            margin-bottom: 5px;
-            color: #6c757d;
-          }
-          
-          .day-content {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            
-            .request-item {
-              padding: 3px 6px;
-              border-radius: 3px;
-              font-size: 0.8rem;
-              cursor: pointer;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              color: #fff;
-              
-              &:hover {
-                opacity: 0.8;
-              }
-              
-              &.status-approved {
-                background-color: #28a745; // Vert
-              }
-              
-              &.status-rejected {
-                background-color: #dc3545; // Rouge
-              }
-              
-              &.status-chef-approved {
-                background-color: #ffc107; // Jaune
-                color: #212529;
-              }
-              
-              &.status-pending {
-                background-color: #3788d8; // Bleu
-              }
-            }
-          }
-        }
-      }
-    }
   }
   
   // Styles pour les statuts
-  .status-approved {
+  .status-approved, .status-admin_approved {
     background-color: #28a745;
     color: white;
     padding: 4px 8px;
@@ -211,7 +78,7 @@
     font-size: 0.8rem;
   }
   
-  .status-rejected {
+  .status-rejected, .status-admin_rejected, .status-chef_rejected {
     background-color: #dc3545;
     color: white;
     padding: 4px 8px;
@@ -219,7 +86,7 @@
     font-size: 0.8rem;
   }
   
-  .status-chef-approved {
+  .status-chef_approved {
     background-color: #ffc107;
     color: #212529;
     padding: 4px 8px;
@@ -381,17 +248,6 @@
       
       &:hover {
         background-color: #c82333;
-      }
-    }
-    
-    &.btn-outline-primary {
-      background-color: transparent;
-      color: #007bff;
-      border: 1px solid #007bff;
-      
-      &:hover {
-        background-color: #007bff;
-        color: white;
       }
     }
   }

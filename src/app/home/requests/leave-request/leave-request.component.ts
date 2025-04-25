@@ -35,17 +35,18 @@ export class LeaveRequestComponent implements OnInit {
     if (id) {
       this.editMode = true;
       this.requestId = id;
-      const existingRequest = this.requestsService.getRequestById(this.requestId);
-      if (existingRequest && existingRequest.details) {
-        this.request = {
-          startDate: existingRequest.details.startDate || '',
-          endDate: existingRequest.details.endDate || '',
-          leaveType: existingRequest.details.leaveType || '',
-          dayPart: existingRequest.details.dayPart || 'full',
-          reason: existingRequest.details.reason || '',
-          documents: null
-        };
-      }
+      this.requestsService.getRequestById(id).subscribe(existingRequest => {
+        if (existingRequest && existingRequest.details) {
+          this.request = {
+            startDate: existingRequest.details.startDate || '',
+            endDate: existingRequest.details.endDate || '',
+            leaveType: existingRequest.details.leaveType || '',
+            dayPart: existingRequest.details.dayPart || 'full',
+            reason: existingRequest.details.reason || '',
+            documents: null
+          };
+        }
+      });
     }
   }
 

@@ -37,14 +37,15 @@ export class AdvanceRequestComponent implements OnInit {
     if (id) {
       this.requestId = id;
       this.editMode = true;
-      const request = this.requestsService.getRequestById(id);
-      if (request && request.details) {
-        this.advanceForm.patchValue({
-          advanceAmount: request.details.advanceAmount || 0,
-          advanceReason: request.details.advanceReason || '',
-          attachments: request.details.attachments || null
-        });
-      }
+      this.requestsService.getRequestById(id).subscribe(request => {
+        if (request && request.details) {
+          this.advanceForm.patchValue({
+            advanceAmount: request.details.advanceAmount || 0,
+            advanceReason: request.details.advanceReason || '',
+            attachments: request.details.attachments || null
+          });
+        }
+      });
     }
   }
 

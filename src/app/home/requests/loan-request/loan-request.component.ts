@@ -42,14 +42,15 @@ export class LoanRequestComponent implements OnInit {
     if (id) {
       this.requestId = id;
       this.editMode = true;
-      const request = this.requestsService.getRequestById(id);
-      if (request && request.details) {
-        this.loanForm.patchValue({
-          loanType: request.details.loanType || 'personal',
-          loanAmount: request.details.loanAmount || 0,
-          attachments: request.details.attachments || null
-        });
-      }
+      this.requestsService.getRequestById(id).subscribe(request => {
+        if (request && request.details) {
+          this.loanForm.patchValue({
+            loanType: request.details.loanType || 'personal',
+            loanAmount: request.details.loanAmount || 0,
+            attachments: request.details.attachments || null
+          });
+        }
+      });
     }
   }
 

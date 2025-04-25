@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Request } from '../models/request.model';
 import { Router } from '@angular/router';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,7 +22,8 @@ export class DashboardComponent implements OnInit {
     private requestService: RequestService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {
     this.isAdmin = this.authService.isAdmin();
     this.isChef = this.authService.hasRole('chef');
@@ -111,6 +113,56 @@ export class DashboardComponent implements OnInit {
         this.snackBar.open('Demande approuvée avec succès', 'Fermer', {
           duration: 3000
         });
+
+        // Générer un ID unique pour les notifications
+        const baseId = 'notification-' + new Date().getTime();
+        
+        if (this.isAdmin) {
+          // 1. Notification pour l'admin qui a approuvé la demande
+          this.notificationService.addNotification({
+            id: baseId + '-admin',
+            message: `Vous avez approuvé définitivement la demande de ${request.type}`,
+            type: 'success',
+            timestamp: new Date(),
+            read: false,
+            targetUserId: 'admin-approval', // Identifiant spécial pour l'admin qui approuve
+            link: `/requests/details/${request.id}`
+          });
+          
+          // 2. Notification pour les autres utilisateurs (chef et employés)
+          this.notificationService.addNotification({
+            id: baseId + '-others',
+            message: `L'admin a approuvé définitivement la demande de ${request.type}`,
+            type: 'info',
+            timestamp: new Date(),
+            read: false,
+            targetUserId: 'others-admin-approval', // Identifiant pour les autres utilisateurs
+            link: `/requests/details/${request.id}`
+          });
+        } else { // Si c'est un chef
+          // 1. Notification pour le chef qui a approuvé la demande
+          this.notificationService.addNotification({
+            id: baseId + '-chef',
+            message: `Vous avez approuvé la demande de ${request.type}. L'admin prendra la décision finale.`,
+            type: 'success',
+            timestamp: new Date(),
+            read: false,
+            targetUserId: 'chef-approval', // Identifiant spécial pour le chef qui approuve
+            link: `/requests/details/${request.id}`
+          });
+          
+          // 2. Notification pour les autres utilisateurs (admin et employés)
+          this.notificationService.addNotification({
+            id: baseId + '-others',
+            message: `Le chef a approuvé la demande de ${request.type}. En attente de l'approbation de l'admin.`,
+            type: 'info',
+            timestamp: new Date(),
+            read: false,
+            targetUserId: 'others-chef-approval', // Identifiant pour les autres utilisateurs
+            link: `/requests/details/${request.id}`
+          });
+        }
+
         this.loadRequests();
       },
       error: (error) => {
@@ -133,6 +185,56 @@ export class DashboardComponent implements OnInit {
         this.snackBar.open('Demande rejetée', 'Fermer', {
           duration: 3000
         });
+
+        // Générer un ID unique pour les notifications
+        const baseId = 'notification-' + new Date().getTime();
+        
+        if (this.isAdmin) {
+          // 1. Notification pour l'admin qui a rejeté la demande
+          this.notificationService.addNotification({
+            id: baseId + '-admin',
+            message: `Vous avez rejeté définitivement la demande de ${request.type}`,
+            type: 'warning',
+            timestamp: new Date(),
+            read: false,
+            targetUserId: 'admin-rejection', // Identifiant spécial pour l'admin qui rejette
+            link: `/requests/details/${request.id}`
+          });
+          
+          // 2. Notification pour les autres utilisateurs (chef et employés)
+          this.notificationService.addNotification({
+            id: baseId + '-others',
+            message: `L'admin a rejeté définitivement la demande de ${request.type}`,
+            type: 'error',
+            timestamp: new Date(),
+            read: false,
+            targetUserId: 'others-admin-rejection', // Identifiant pour les autres utilisateurs
+            link: `/requests/details/${request.id}`
+          });
+        } else { // Si c'est un chef
+          // 1. Notification pour le chef qui a rejeté la demande
+          this.notificationService.addNotification({
+            id: baseId + '-chef',
+            message: `Vous avez rejeté la demande de ${request.type}.`,
+            type: 'warning',
+            timestamp: new Date(),
+            read: false,
+            targetUserId: 'chef-rejection', // Identifiant spécial pour le chef qui rejette
+            link: `/requests/details/${request.id}`
+          });
+          
+          // 2. Notification pour les autres utilisateurs (admin et employés)
+          this.notificationService.addNotification({
+            id: baseId + '-others',
+            message: `Le chef a rejeté la demande de ${request.type}.`,
+            type: 'error',
+            timestamp: new Date(),
+            read: false,
+            targetUserId: 'others-chef-rejection', // Identifiant pour les autres utilisateurs
+            link: `/requests/details/${request.id}`
+          });
+        }
+
         this.loadRequests();
       },
       error: (error) => {
@@ -162,8 +264,8 @@ export class DashboardComponent implements OnInit {
 
   isEditableRequest(request: Request): boolean {
     console.log('Vérification isEditableRequest pour la demande:', request);
-    const isEditable = request.requestType === 'congé paternité' || request.requestType === 'congé maternité';
-    console.log('Type de congé:', request.requestType, 'isEditable:', isEditable);
+    const isEditable = request.type === 'congé paternité' || request.type === 'congé maternité';
+    console.log('Type de congé:', request.type, 'isEditable:', isEditable);
     return this.canEdit(request) && isEditable;
   }
 
@@ -174,8 +276,8 @@ export class DashboardComponent implements OnInit {
       console.log('ID de la demande:', requestId);
       
       // Vérification explicite du type de congé
-      if (request.requestType !== 'congé paternité' && request.requestType !== 'congé maternité') {
-        console.log('Type de congé non éditable:', request.requestType);
+      if (request.type !== 'congé paternité' && request.type !== 'congé maternité') {
+        console.log('Type de congé non éditable:', request.type);
         this.snackBar.open('Ce type de congé ne peut pas être édité', 'Fermer', { duration: 3000 });
         return;
       }

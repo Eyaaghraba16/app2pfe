@@ -7,18 +7,7 @@
     </div>
   </div>
   
-  <!-- Navigation entre les vues -->
-  <div class="admin-tabs">
-    <button class="tab-btn" [class.active]="activeView === 'list'" (click)="activeView = 'list'">
-      <i class="fas fa-list"></i> Liste des demandes
-    </button>
-    <button class="tab-btn" [class.active]="activeView === 'calendar'" (click)="activeView = 'calendar'">
-      <i class="fas fa-calendar-alt"></i> Calendrier
-    </button>
-  </div>
-  
-  <!-- Vue Liste des demandes -->
-  <div class="admin-content" *ngIf="activeView === 'list'">
+  <div class="admin-content">
     <div class="header-section">
       <h2>Liste des demandes</h2>
       <div class="filter-section">
@@ -82,42 +71,6 @@
           </tr>
         </tbody>
       </table>
-    </div>
-  </div>
-  
-  <!-- Vue Calendrier -->
-  <div class="admin-content calendar-view" *ngIf="activeView === 'calendar'">
-    <div class="calendar-header">
-      <h2>Calendrier des demandes</h2>
-      <div class="calendar-navigation">
-        <button class="btn btn-outline-primary" (click)="previousMonth()">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <h3 class="current-month">{{ months[currentMonth.getMonth()] }} {{ currentMonth.getFullYear() }}</h3>
-        <button class="btn btn-outline-primary" (click)="nextMonth()">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-    </div>
-    
-    <div class="calendar-grid">
-      <!-- Jours de la semaine -->
-      <div class="weekday" *ngFor="let day of weekdays">
-        {{ day }}
-      </div>
-      
-      <!-- Jours du mois avec les demandes -->
-      <div class="day" *ngFor="let day of calendarDays">
-        <div class="day-header">{{ day.number > 0 ? day.number : '' }}</div>
-        <div class="day-content" *ngIf="day.number > 0">
-          <div class="request-item" 
-               *ngFor="let request of day.requests" 
-               [ngClass]="getStatusClass(request.status)"
-               (click)="viewRequestDetails(request)">
-            {{ request.type }}
-          </div>
-        </div>
-      </div>
     </div>
   </div>
   

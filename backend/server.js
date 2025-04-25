@@ -75,8 +75,77 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Configuration de Socket.IO pour les notifications en temps réel
+const http = require('http');
+const server = http.createServer(app);
+const io = require('socket.io')(server, {
+    cors: {
+        origin: "http://localhost:4200",
+        methods: ["GET", "POST"]
+    }
+});
+
+// Stockage des connexions utilisateur
+const userConnections = {};
+
+// Gestion des connexions Socket.IO
+io.on('connection', (socket) => {
+    console.log('Nouvelle connexion WebSocket établie');
+    
+    // Authentification de l'utilisateur
+    socket.on('authenticate', (userData) => {
+        const userId = userData.userId;
+        const role = userData.role;
+        
+        // Stocker la connexion de l'utilisateur
+        userConnections[userId] = {
+            socketId: socket.id,
+            role: role
+        };
+        
+        console.log(`Utilisateur ${userId} (${role}) authentifié sur WebSocket`);
+        
+        // Rejoindre les salles en fonction du rôle
+        socket.join(role);
+        socket.join(`user-${userId}`);
+    });
+    
+    // Déconnexion
+    socket.on('disconnect', () => {
+        // Supprimer l'utilisateur des connexions actives
+        for (const userId in userConnections) {
+            if (userConnections[userId].socketId === socket.id) {
+                console.log(`Utilisateur ${userId} déconnecté du WebSocket`);
+                delete userConnections[userId];
+                break;
+            }
+        }
+    });
+});
+
+// Fonction pour envoyer des notifications
+const sendNotification = (targetUserId, notification) => {
+    // Si l'utilisateur cible est connecté
+    if (userConnections[targetUserId]) {
+        io.to(userConnections[targetUserId].socketId).emit('notification', notification);
+    }
+    
+    // Stocker la notification dans la base de données pour l'historique
+    // (implémentation à ajouter)
+};
+
+// Fonction pour notifier par rôle
+const notifyByRole = (role, notification) => {
+    io.to(role).emit('notification', notification);
+};
+
+// Exposer les fonctions de notification pour les autres modules
+app.set('sendNotification', sendNotification);
+app.set('notifyByRole', notifyByRole);
+app.set('io', io);
+
 // Démarrage du serveur
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Serveur démarré sur le port ${PORT}`);
+server.listen(PORT, () => {
+    console.log(`Serveur démarré sur le port ${PORT} avec WebSocket`);
 });

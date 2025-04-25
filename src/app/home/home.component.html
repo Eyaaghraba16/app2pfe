@@ -13,12 +13,19 @@
       <li *ngIf="currentUser?.email === 'admin@company.com'">
         <a routerLink="/admin" routerLinkActive="active">Administration</a>
       </li>
+      <li class="notifications-menu-item">
+        <app-notifications></app-notifications>
+      </li>
       <li><a (click)="logout()" class="logout-link">Déconnexion</a></li>
     </ul>
   </nav>
 
   <!-- Main Content -->
   <div class="content">
+    <!-- Bouton de test pour les notifications (temporaire) -->
+    <button class="test-notification-btn" (click)="testNotification()" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Tester les notifications
+    </button>
     <router-outlet></router-outlet>
   </div>
 </div>

@@ -528,7 +528,7 @@ export class RequestsService {
   // Méthode pour ajouter une nouvelle demande de document
   addDocumentRequest(data: {
     documentType: string;
-    urgency: boolean;
+    urgency: 'low' | 'medium' | 'high';
     additionalInfo?: string;
   }): string {
     const currentUser = this.authService.currentUserValue;
@@ -539,7 +539,7 @@ export class RequestsService {
       description: `Demande de document - ${data.documentType}`,
       details: {
         documentType: data.documentType,
-        urgency: typeof data.urgency === 'boolean' ? ('normal' as any) : data.urgency,
+        urgency: data.urgency,
         additionalInfo: data.additionalInfo
       }
     });
@@ -702,7 +702,7 @@ export class RequestsService {
   // Méthode pour mettre à jour une demande de document
   updateDocumentRequest(requestId: string, data: {
     documentType: string;
-    urgency: boolean;
+    urgency: 'low' | 'medium' | 'high';
     additionalInfo?: string;
   }): boolean {
     const request = this.findRequestById(requestId);
@@ -717,7 +717,7 @@ export class RequestsService {
       details: {
         ...this.requests[index].details,
         documentType: data.documentType,
-        urgency: typeof data.urgency === 'boolean' ? ('normal' as any) : data.urgency,
+        urgency: data.urgency,
         additionalInfo: data.additionalInfo
       }
     };

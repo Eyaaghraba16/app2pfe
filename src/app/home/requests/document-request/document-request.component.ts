@@ -53,18 +53,19 @@ export class DocumentRequestComponent implements OnInit {
     if (id) {
       this.requestId = id;
       this.editMode = true;
-      const request = this.requestsService.getRequestById(id);
-      if (request && request.details) {
-        this.documentForm.patchValue({
-          documentType: request.details.documentType || '',
-          reason: request.details.reason || '',
-          urgency: request.details.urgency || 'normal',
-          purpose: request.details.purpose || '',
-          language: request.details.language || 'fr',
-          copies: request.details.copies || 1,
-          comments: request.details.comments || ''
-        });
-      }
+      this.requestsService.getRequestById(id).subscribe(request => {
+        if (request && request.details) {
+          this.documentForm.patchValue({
+            documentType: request.details.documentType || '',
+            reason: request.details.reason || '',
+            urgency: request.details.urgency || 'normal',
+            purpose: request.details.purpose || '',
+            language: request.details.language || 'fr',
+            copies: request.details.copies || 1,
+            comments: request.details.comments || ''
+          });
+        }
+      });
     }
   }
 

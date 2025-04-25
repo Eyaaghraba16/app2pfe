@@ -6,6 +6,10 @@ import { WorkCertificateRequestComponent } from './home/requests/work-certificat
 import { RequestEditComponent } from './home/requests/request-edit/request-edit.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminComponent } from './admin/admin.component';
+import { SimpleAdminComponent } from './admin/simple-admin/simple-admin.component';
+import { BasicAdminComponent } from './admin/basic-admin/basic-admin.component';
+import { TestPageComponent } from './test-page/test-page.component';
+import { MinimalComponent } from './minimal/minimal.component';
 import { HomeComponent } from './home/home.component';
 import { ProfileComponent } from './home/profile/profile.component';
 import { RequestsComponent } from './home/requests/requests.component';
@@ -21,7 +25,9 @@ import { DocumentRequestComponent } from './home/requests/document-request/docum
 import { ChefViewComponent } from './chef/chef-view.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '', component: MinimalComponent },
+  { path: 'minimal', component: MinimalComponent },
+  { path: 'test', component: TestPageComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
@@ -34,9 +40,13 @@ const routes: Routes = [
   },
   { 
     path: 'admin', 
-    component: AdminComponent,
+    component: BasicAdminComponent,
     canActivate: [AuthGuard],
     data: { roles: ['admin'] }
+  },
+  { 
+    path: 'admin-test', 
+    component: BasicAdminComponent
   },
   {
     path: 'home',

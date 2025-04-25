@@ -63,6 +63,24 @@
         color: white;
       }
     }
+    
+    &.notifications-menu-item {
+      display: flex;
+      align-items: center;
+      margin-left: auto; // Pousse l'élément vers la droite
+      
+      ::ng-deep .notifications-container {
+        .notification-icon {
+          padding: 0.5rem;
+          border-radius: 50%;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            background: #f0f0f0;
+          }
+        }
+      }
+    }
   }
 }
 

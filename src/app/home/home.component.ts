@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../models/user.model';
+import { NotificationsComponent } from '../shared/notifications/notifications.component';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationsComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
@@ -16,7 +18,8 @@ export class HomeComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -31,5 +34,18 @@ export class HomeComponent implements OnInit {
 
   logout() {
     this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+  
+  // Fonction de test pour les notifications
+  testNotification() {
+    this.notificationService.addNotification({
+      id: Date.now().toString(),
+      message: `Nouvelle notification de test`,
+      type: 'info',
+      timestamp: new Date(),
+      read: false,
+      link: `/home/requests`
+    });
   }
 }

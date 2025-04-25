@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { User, PersonalInfo, ProfessionalInfo } from '../models/user.model';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -12,10 +13,14 @@ export class AuthService {
   private users: User[] = [];
   private requests: any[] = []; // Ajout d'un tableau pour stocker les demandes
 
-  constructor(private router: Router) {
-    // Load users from localStorage
-    const storedUsers = localStorage.getItem('users');
-    this.users = storedUsers ? JSON.parse(storedUsers) : [];
+  constructor(private router: Router, @Inject(PLATFORM_ID) private platformId: Object) {
+    // Load users from localStorage only in browser environment
+    if (isPlatformBrowser(this.platformId)) {
+      const storedUsers = localStorage.getItem('users');
+      this.users = storedUsers ? JSON.parse(storedUsers) : [];
+    } else {
+      this.users = [];
+    }
 
     // Create default admin account if it doesn't exist
     const adminExists = this.users.some(user => user.email === 'admin@company.com');
@@ -109,8 +114,11 @@ export class AuthService {
       this.saveUsers();
     }
 
-    // Initialize BehaviorSubject with current user
-    const currentUser = localStorage.getItem('currentUser');
+    // Load current user from localStorage only in browser environment
+    let currentUser = null;
+    if (isPlatformBrowser(this.platformId)) {
+      currentUser = localStorage.getItem('currentUser');
+    }
     this.currentUserSubject = new BehaviorSubject<User | null>(
       currentUser ? JSON.parse(currentUser) : null
     );
@@ -122,7 +130,9 @@ export class AuthService {
   }
 
   private saveUsers() {
-    localStorage.setItem('users', JSON.stringify(this.users));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('users', JSON.stringify(this.users));
+    }
   }
 
   getAllUsers(): User[] {
@@ -151,7 +161,9 @@ export class AuthService {
   }
 
   private saveRequests() {
-    localStorage.setItem('requests', JSON.stringify(this.requests)); // Sauvegarde des demandes
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('requests', JSON.stringify(this.requests)); // Sauvegarde des demandes
+    }
   }
 
   register(user: Omit<User, 'id' | 'personalInfo' | 'professionalInfo'>): boolean {
@@ -219,9 +231,11 @@ export class AuthService {
       // Don't store password in localStorage
       const { password: _, ...userWithoutPassword } = user;
       
-      // Store user in localStorage
-      localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
-      localStorage.setItem('isLoggedIn', 'true');
+      // Store user in localStorage only in browser environment
+      if (isPlatformBrowser(this.platformId)) {
+        localStorage.setItem('currentUser', JSON.stringify(userWithoutPassword));
+        localStorage.setItem('isLoggedIn', 'true');
+      }
       
       // Update BehaviorSubject
       this.currentUserSubject.next(userWithoutPassword);
@@ -240,9 +254,11 @@ export class AuthService {
   }
 
   logout() {
-    // Remove user from localStorage
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('isLoggedIn');
+    // Remove user from localStorage only in browser environment
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('isLoggedIn');
+    }
     
     // Update BehaviorSubject
     this.currentUserSubject.next(null);
@@ -269,7 +285,9 @@ export class AuthService {
     // If it's the current user, update currentUser as well
     if (this.currentUserValue?.id === userId) {
       const updatedUser = { ...this.currentUserValue, ...updates };
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      if (isPlatformBrowser(this.platformId)) {
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      }
       this.currentUserSubject.next(updatedUser);
     }
 

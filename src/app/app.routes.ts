@@ -17,14 +17,18 @@ import { AdvanceRequestComponent } from './home/requests/advance-request/advance
 import { DocumentRequestComponent } from './home/requests/document-request/document-request.component';
 import { AuthGuard } from './auth/auth.guard';
 import { AdminComponent } from './admin/admin.component';
+import { MinimalComponent } from './minimal/minimal.component';
+import { SimpleAdminComponent } from './admin/simple-admin/simple-admin.component';
+import { AdminCalendarComponent } from './admin/admin-calendar/admin-calendar.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'minimal', component: MinimalComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password/:token', component: ResetPasswordComponent },
-  { path: 'admin', component: AdminComponent, canActivate: [AuthGuard] },
+  { path: 'admin', component: AdminCalendarComponent },
   { 
     path: 'home', 
     component: HomeComponent,

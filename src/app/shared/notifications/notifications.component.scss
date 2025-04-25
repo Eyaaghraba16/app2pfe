@@ -1,0 +1,154 @@
+.notifications-container {
+  position: relative;
+  display: inline-block;
+}
+
+.notification-icon {
+  cursor: pointer;
+  position: relative;
+  font-size: 1.2rem;
+  color: #555;
+  padding: 10px;
+  
+  &:hover {
+    color: #007bff;
+  }
+  
+  .badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.notifications-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  max-height: 400px;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  overflow: hidden;
+  
+  .notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    
+    .mark-all-read {
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  
+  .notifications-list {
+    max-height: 350px;
+    overflow-y: auto;
+    
+    .notification-item {
+      display: flex;
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      
+      &:hover {
+        background-color: #f8f9fa;
+      }
+      
+      &.unread {
+        background-color: #f0f7ff;
+        
+        &:hover {
+          background-color: #e6f2ff;
+        }
+      }
+      
+      .notification-icon {
+        margin-right: 10px;
+        padding: 0;
+        
+        i {
+          font-size: 1.2rem;
+        }
+      }
+      
+      .notification-content {
+        flex: 1;
+        
+        .notification-message {
+          margin: 0 0 5px 0;
+          font-size: 0.9rem;
+          color: #333;
+        }
+        
+        .notification-time {
+          font-size: 0.75rem;
+          color: #888;
+        }
+      }
+      
+      .delete-notification {
+        background: none;
+        border: none;
+        color: #aaa;
+        cursor: pointer;
+        padding: 5px;
+        
+        &:hover {
+          color: #dc3545;
+        }
+      }
+    }
+    
+    .notification-info .notification-icon i {
+      color: #17a2b8;
+    }
+    
+    .notification-success .notification-icon i {
+      color: #28a745;
+    }
+    
+    .notification-warning .notification-icon i {
+      color: #ffc107;
+    }
+    
+    .notification-error .notification-icon i {
+      color: #dc3545;
+    }
+  }
+  
+  .no-notifications {
+    padding: 30px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+  }
+}

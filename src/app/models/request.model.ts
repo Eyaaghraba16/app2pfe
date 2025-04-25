@@ -1,4 +1,5 @@
 export interface Request {
+  requestType: string;
   id: string;
   type: string;
   date: string;

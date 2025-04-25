@@ -4,6 +4,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -25,6 +26,15 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { AppRoutingModule } from './app-routing.module';
 import { SharedModule } from './shared/shared.module';
 
+// Configuration de Socket.IO
+const socketIoConfig: SocketIoConfig = { 
+  url: 'http://localhost:3000', 
+  options: {
+    autoConnect: true,
+    reconnection: true
+  } 
+};
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -41,6 +51,7 @@ import { SharedModule } from './shared/shared.module';
     FormsModule,
     RouterModule,
     AppRoutingModule,
+    SocketIoModule.forRoot(socketIoConfig),
     MatButtonModule,
     MatCardModule,
     MatDatepickerModule,

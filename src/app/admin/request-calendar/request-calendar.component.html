@@ -1,0 +1,73 @@
+<div class="calendar-container">
+  <h2>Calendrier des demandes</h2>
+  
+  <div class="calendar-navigation">
+    <button class="nav-btn" (click)="previousMonth()">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <h3 class="current-month">{{ months[currentMonth.getMonth()] }} {{ currentMonth.getFullYear() }}</h3>
+    <button class="nav-btn" (click)="nextMonth()">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+  
+  <div class="calendar-wrapper">
+    <div class="calendar-grid">
+      <!-- Jours de la semaine -->
+      <div class="weekday" *ngFor="let day of weekdays">
+        {{ day }}
+      </div>
+      
+      <!-- Jours du mois -->
+      <div class="day" *ngFor="let day of daysInMonth">
+        <div class="day-header">{{ day }}</div>
+        <div class="day-content">
+          <div class="request-item" 
+               *ngFor="let request of getRequestsForDay(day)" 
+               [ngClass]="getStatusClass(request.status)"
+               (click)="viewRequestDetails(request)">
+            {{ request.type }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de détails de la demande -->
+  <div class="request-details-modal" *ngIf="showRequestDetails && selectedRequest">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Détails de la demande</h3>
+        <button class="close-btn" (click)="closeRequestDetails()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="request-info">
+          <p><strong>Type:</strong> {{ selectedRequest.type }}</p>
+          <p><strong>Employé:</strong> {{ selectedRequest.user?.firstname }} {{ selectedRequest.user?.lastname }}</p>
+          <p><strong>Date de création:</strong> {{ formatDate(selectedRequest.createdAt) }}</p>
+          <p><strong>Statut:</strong> <span [ngClass]="getStatusClass(selectedRequest.status)">{{ selectedRequest.status }}</span></p>
+          
+          <div *ngIf="selectedRequest.details?.startDate">
+            <p><strong>Date de début:</strong> {{ formatDate(selectedRequest.details.startDate) }}</p>
+          </div>
+          
+          <div *ngIf="selectedRequest.details?.endDate">
+            <p><strong>Date de fin:</strong> {{ formatDate(selectedRequest.details.endDate) }}</p>
+          </div>
+          
+          <div *ngIf="selectedRequest.description">
+            <p><strong>Description:</strong> {{ selectedRequest.description }}</p>
+          </div>
+          
+          <div *ngIf="selectedRequest.chefObservation">
+            <p><strong>Observation du chef:</strong> {{ selectedRequest.chefObservation }}</p>
+          </div>
+          
+          <div *ngIf="selectedRequest.adminResponse">
+            <p><strong>Réponse de l'admin:</strong> {{ selectedRequest.adminResponse }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

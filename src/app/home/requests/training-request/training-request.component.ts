@@ -91,31 +91,34 @@ export class TrainingRequestComponent implements OnInit {
     if (id) {
       this.editMode = true;
       this.requestId = id;
-      const existingRequest = this.requestsService.getRequestById(id);
-      if (existingRequest && existingRequest.details) {
-        this.request = {
-          title: existingRequest.details.title || '',
-          organization: existingRequest.details.organization || '',
-          startDate: existingRequest.details.startDate || '',
-          endDate: existingRequest.details.endDate || '',
-          trainingType: existingRequest.details.trainingType || '',
-          objectives: existingRequest.details.objectives || '',
-          cost: existingRequest.details.cost || 0,
-          documents: []
-        };
-        
-        if (existingRequest.details.department) {
-          this.selectedDepartment = existingRequest.details.department;
-          this.onDepartmentChange();
-          if (existingRequest.details.theme) {
-            this.selectedTheme = existingRequest.details.theme;
-            this.onThemeChange();
-            if (existingRequest.details.topic) {
-              this.selectedTopic = existingRequest.details.topic;
+      this.requestsService.getRequestById(id).subscribe(existingRequest => {
+        if (existingRequest && existingRequest.details) {
+          this.request = {
+            title: existingRequest.details.title || '',
+            organization: existingRequest.details.organization || '',
+            startDate: existingRequest.details.startDate || '',
+            endDate: existingRequest.details.endDate || '',
+            trainingType: existingRequest.details.trainingType || '',
+            objectives: existingRequest.details.objectives || '',
+            cost: existingRequest.details.cost || 0,
+            documents: []
+          };
+          
+          if (existingRequest.details.department) {
+            this.selectedDepartment = existingRequest.details.department;
+            this.onDepartmentChange();
+            if (existingRequest.details.theme) {
+              this.selectedTheme = existingRequest.details.theme;
+              this.onThemeChange();
+              if (existingRequest.details.topic) {
+                this.selectedTopic = existingRequest.details.topic;
+              }
             }
           }
         }
-      }
+      }, error => {
+        console.error(error);
+      });
     }
   }
 
@@ -156,16 +159,24 @@ export class TrainingRequestComponent implements OnInit {
 
     const theme = this.availableThemes.find(t => t.id === this.selectedTheme);
 
-    const requestData = {
-      type: 'Formation',
-      description: `Formation en ${theme?.name || ''} - ${this.selectedTopic}`,
-      details: trainingDetails
+    // Create the request data with the correct structure expected by the service methods
+    const trainingRequestData = {
+      title: this.request.title,
+      organization: this.request.organization,
+      startDate: this.request.startDate,
+      endDate: this.request.endDate,
+      trainingType: this.request.trainingType,
+      objectives: this.request.objectives,
+      cost: this.request.cost,
+      department: this.selectedDepartment,
+      theme: this.selectedTheme,
+      topic: this.selectedTopic
     };
 
     if (this.editMode && this.requestId) {
-      this.requestsService.updateTrainingRequest(this.requestId, requestData);
+      this.requestsService.updateTrainingRequest(this.requestId, trainingRequestData);
     } else {
-      this.requestsService.addTrainingRequest(requestData);
+      this.requestsService.addTrainingRequest(trainingRequestData);
     }
 
     this.router.navigate(['/home/requests']);

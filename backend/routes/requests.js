@@ -91,38 +91,182 @@ router.get('/user/:userId', auth, async (req, res) => {
     }
 });
 
+// Créer une nouvelle demande
+router.post('/', auth, async (req, res) => {
+    try {
+        const { type, details } = req.body;
+        
+        // Insérer la nouvelle demande
+        const [result] = await promisePool.execute(
+            'INSERT INTO requests (user_id, type, details, status, created_at, updated_at) VALUES (?, ?, ?, "En attente", NOW(), NOW())',
+            [req.user.id, type, JSON.stringify(details)]
+        );
+        
+        const requestId = result.insertId;
+        
+        // Récupérer les informations de l'utilisateur
+        const [userInfo] = await promisePool.execute(
+            'SELECT firstname, lastname FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        
+        const userName = `${userInfo[0].firstname} ${userInfo[0].lastname}`;
+        
+        // Créer une notification pour l'admin
+        const adminNotification = {
+            id: Date.now().toString(),
+            message: `Nouvelle demande de ${type} créée par ${userName}.`,
+            type: 'info',
+            timestamp: new Date(),
+            read: false,
+            link: `/admin/requests/details/${requestId}`
+        };
+        
+        // Créer une notification pour le chef (uniquement pour les demandes de congés et de formation)
+        if (type === 'congé' || type === 'formation') {
+            const chefNotification = {
+                id: (Date.now() + 1).toString(),
+                message: `Nouvelle demande de ${type} créée par ${userName}.`,
+                type: 'info',
+                timestamp: new Date(),
+                read: false,
+                link: `/home/requests/details/${requestId}`
+            };
+            
+            // Notifier le chef
+            const notifyByRole = req.app.get('notifyByRole');
+            notifyByRole('chef', chefNotification);
+        }
+        
+        // Notifier l'admin
+        const notifyByRole = req.app.get('notifyByRole');
+        notifyByRole('admin', adminNotification);
+        
+        res.status(201).json({ 
+            id: requestId,
+            message: 'Demande créée avec succès' 
+        });
+    } catch (error) {
+        console.error('Erreur lors de la création de la demande:', error);
+        res.status(500).json({ message: 'Erreur lors de la création de la demande' });
+    }
+});
+
 // Mettre à jour le statut d'une demande (admin ou chef)
 router.patch('/:id/status', auth, async (req, res) => {
     try {
-        const { status, niveau } = req.body; // niveau = 'chef' ou 'admin'
+        const { status, observation, niveau } = req.body; // niveau = 'chef' ou 'admin'
         const requestId = req.params.id;
-
+        
+        // Récupérer les informations de la demande et de l'utilisateur
+        const [requestInfo] = await promisePool.execute(
+            `SELECT r.*, u.id as user_id, u.firstname, u.lastname, u.email, u.role
+             FROM requests r 
+             JOIN users u ON r.user_id = u.id 
+             WHERE r.id = ?`,
+            [requestId]
+        );
+        
+        if (!requestInfo.length) {
+            return res.status(404).json({ message: 'Demande non trouvée' });
+        }
+        
+        const request = requestInfo[0];
+        const userId = request.user_id;
+        const userName = `${request.firstname} ${request.lastname}`;
+        const requestType = request.type;
+        
         // Si c'est le chef
         if (req.user.role === 'chef' && niveau === 'chef') {
-            // Le chef ne peut approuver/rejeter que les demandes de ses subordonnés
-            // On vérifie que la demande appartient bien à un subordonné
-            const [rows] = await promisePool.execute(
-                `SELECT u.chef_id FROM requests r JOIN users u ON r.user_id = u.id WHERE r.id = ?`,
-                [requestId]
-            );
-            if (!rows.length || rows[0].chef_id !== req.user.id) {
-                return res.status(403).json({ message: 'Vous ne pouvez traiter que les demandes de vos subordonnés' });
+            // Le chef ne peut approuver/rejeter que les demandes de congés et de formation
+            if (requestType !== 'congé' && requestType !== 'formation') {
+                return res.status(403).json({ 
+                    message: 'Le chef ne peut traiter que les demandes de congés et de formation' 
+                });
             }
-            // On met à jour le statut à 'chef_approved' ou 'chef_rejected'
+            
+            // On met à jour le statut à 'Chef approuvé' ou 'Chef rejeté'
             await promisePool.execute(
-                'UPDATE requests SET status = ?, updated_at = NOW() WHERE id = ?',
-                [status, requestId]
+                `UPDATE requests 
+                 SET status = ?, 
+                     chef_observation = ?,
+                     chef_processed_by = ?,
+                     chef_processed_date = NOW(),
+                     updated_at = NOW() 
+                 WHERE id = ?`,
+                [status, observation, req.user.id, requestId]
             );
-            return res.json({ message: 'Statut de la demande mis à jour par le chef' });
+            
+            // Envoyer une notification à l'employé
+            const employeeNotification = {
+                id: Date.now().toString(),
+                message: `Votre demande de ${requestType} a été ${status === 'Chef approuvé' ? 'approuvée' : 'rejetée'} par le chef.`,
+                type: status === 'Chef approuvé' ? 'success' : 'warning',
+                timestamp: new Date(),
+                read: false,
+                link: `/home/requests/details/${requestId}`
+            };
+            
+            // Envoyer une notification à l'admin
+            const adminNotification = {
+                id: (Date.now() + 1).toString(),
+                message: `Une demande de ${requestType} de ${userName} a été ${status === 'Chef approuvé' ? 'approuvée' : 'rejetée'} par le chef.`,
+                type: 'info',
+                timestamp: new Date(),
+                read: false,
+                link: `/admin/requests/details/${requestId}`
+            };
+            
+            // Utiliser les fonctions de notification du serveur
+            const sendNotification = req.app.get('sendNotification');
+            const notifyByRole = req.app.get('notifyByRole');
+            
+            // Envoyer les notifications
+            sendNotification(userId, employeeNotification);
+            notifyByRole('admin', adminNotification);
+            
+            return res.json({ 
+                message: 'Statut de la demande mis à jour par le chef',
+                notifications: [employeeNotification, adminNotification]
+            });
         }
+        
         // Si c'est l'admin
         if (req.user.role === 'admin' && niveau === 'admin') {
+            // On met à jour le statut à 'Approuvée' ou 'Rejetée'
             await promisePool.execute(
-                'UPDATE requests SET status = ?, updated_at = NOW() WHERE id = ?',
-                [status, requestId]
+                `UPDATE requests 
+                 SET status = ?, 
+                     admin_response = ?,
+                     admin_processed_by = ?,
+                     admin_processed_date = NOW(),
+                     updated_at = NOW() 
+                 WHERE id = ?`,
+                [status, observation, req.user.id, requestId]
             );
-            return res.json({ message: 'Statut de la demande mis à jour par l\'admin' });
+            
+            // Envoyer une notification à l'employé
+            const employeeNotification = {
+                id: Date.now().toString(),
+                message: `Votre demande de ${requestType} a été ${status === 'Approuvée' ? 'approuvée' : 'rejetée'} définitivement.`,
+                type: status === 'Approuvée' ? 'success' : 'error',
+                timestamp: new Date(),
+                read: false,
+                link: `/home/requests/details/${requestId}`
+            };
+            
+            // Utiliser les fonctions de notification du serveur
+            const sendNotification = req.app.get('sendNotification');
+            
+            // Envoyer la notification
+            sendNotification(userId, employeeNotification);
+            
+            return res.json({ 
+                message: 'Statut de la demande mis à jour par l\'admin',
+                notifications: [employeeNotification]
+            });
         }
+        
         // Sinon accès refusé
         return res.status(403).json({ message: 'Accès non autorisé' });
     } catch (error) {

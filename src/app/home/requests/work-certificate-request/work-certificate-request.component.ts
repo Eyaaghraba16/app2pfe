@@ -190,19 +190,20 @@ export class WorkCertificateRequestComponent implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.requestId = id;
       this.editMode = true;
-      const existingRequest = this.requestsService.getRequestById(id);
-      if (existingRequest && existingRequest.details) {
-        this.request = {
-          purpose: existingRequest.details.purpose || '',
-          otherPurpose: existingRequest.details.purpose === 'other' ? existingRequest.details.purpose : '',
-          language: existingRequest.details.language || '',
-          copies: existingRequest.details.copies || 1,
-          comments: existingRequest.details.comments || '',
-          documents: null
-        };
-      }
+      this.requestId = id;
+      this.requestsService.getRequestById(id).subscribe(existingRequest => {
+        if (existingRequest && existingRequest.details) {
+          this.request = {
+            purpose: existingRequest.details.purpose || '',
+            otherPurpose: existingRequest.details.purpose === 'other' ? ((existingRequest.details as any).otherPurpose || '') : '',
+            language: existingRequest.details.language || '',
+            copies: existingRequest.details.copies || 1,
+            comments: existingRequest.details.comments || '',
+            documents: null
+          };
+        }
+      });
     }
   }
 
