@@ -1,0 +1,146 @@
+<div class="admin-dashboard">
+  <h1>Tableau de bord Admin</h1>
+  
+  <div class="requests-list">
+    <div class="header-section">
+      <h2>Liste des demandes</h2>
+      <div class="filter-section">
+        <button class="btn" [class.btn-primary]="currentFilter === 'all'" (click)="filterRequests('all')">Toutes</button>
+        <button class="btn" [class.btn-primary]="currentFilter === 'chef'" (click)="filterRequests('chef')">Traitées par le chef</button>
+        <button class="btn" [class.btn-primary]="currentFilter === 'pending'" (click)="filterRequests('pending')">En attente</button>
+      </div>
+      <app-search-bar (search)="onSearch($event)"></app-search-bar>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Employé</th>
+            <th>Status</th>
+            <th>Observation Chef</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let request of filteredRequests">
+            <td>{{request.id}}</td>
+            <td>{{request.createdAt | date:'dd/MM/yyyy'}}</td>
+            <td>{{request.type}}</td>
+            <td>{{request.user?.firstname}} {{request.user?.lastname}}</td>
+            <td>
+              <span [class]="'status-' + request.status.toLowerCase()">
+                {{request.status}}
+              </span>
+            </td>
+            <td>{{request.chefObservation || 'Pas d\'observation'}}</td>
+            <td>
+              <button class="btn btn-primary" (click)="viewRequestDetails(request)">
+                <i class="fas fa-eye"></i> Détails
+              </button>
+              
+              <!-- Boutons pour les demandes en attente -->
+              <ng-container *ngIf="request.status === 'PENDING'">
+                <button class="btn btn-success" (click)="approveRequest(request.id)">
+                  <i class="fas fa-check"></i> Approuver
+                </button>
+                <button class="btn btn-danger" (click)="rejectRequest(request.id)">
+                  <i class="fas fa-times"></i> Rejeter
+                </button>
+              </ng-container>
+              
+              <!-- Boutons pour les demandes traitées par le chef -->
+              <ng-container *ngIf="request.status === 'CHEF_APPROVED' || request.status === 'CHEF_REJECTED'">
+                <button class="btn btn-success" (click)="finalApproveRequest(request)">
+                  <i class="fas fa-check-double"></i> Approbation finale
+                </button>
+                <button class="btn btn-danger" (click)="finalRejectRequest(request)">
+                  <i class="fas fa-ban"></i> Rejet final
+                </button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal pour afficher les détails d'une demande -->
+<div class="modal" [class.show]="selectedRequest" *ngIf="selectedRequest">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Détails de la demande #{{selectedRequest.id}}</h5>
+        <button type="button" class="close" (click)="closeModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="request-details">
+          <p><strong>Type:</strong> {{selectedRequest.type}}</p>
+          <p><strong>Date:</strong> {{selectedRequest.createdAt | date:'dd/MM/yyyy'}}</p>
+          <p><strong>Employé:</strong> {{selectedRequest.user?.firstname}} {{selectedRequest.user?.lastname}}</p>
+          <p><strong>Status:</strong> 
+            <span [class]="'status-' + selectedRequest.status.toLowerCase()">
+              {{selectedRequest.status}}
+            </span>
+          </p>
+          
+          <div *ngIf="selectedRequest.chefObservation" class="chef-observation">
+            <h6>Observation du chef:</h6>
+            <p>{{selectedRequest.chefObservation}}</p>
+            <p><small>Traité par: {{selectedRequest.chefProcessedBy}} le {{selectedRequest.chefProcessedDate | date:'dd/MM/yyyy HH:mm'}}</small></p>
+          </div>
+          
+          <div *ngIf="selectedRequest.adminResponse" class="admin-response">
+            <h6>Réponse finale:</h6>
+            <p>{{selectedRequest.adminResponse}}</p>
+            <p><small>Traité par: {{selectedRequest.adminProcessedBy}} le {{selectedRequest.adminProcessedDate | date:'dd/MM/yyyy HH:mm'}}</small></p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Fermer</button>
+        
+        <!-- Boutons pour les demandes traitées par le chef -->
+        <ng-container *ngIf="selectedRequest.status === 'CHEF_APPROVED' || selectedRequest.status === 'CHEF_REJECTED'">
+          <button class="btn btn-success" (click)="finalApproveRequest(selectedRequest)">
+            <i class="fas fa-check-double"></i> Approbation finale
+          </button>
+          <button class="btn btn-danger" (click)="finalRejectRequest(selectedRequest)">
+            <i class="fas fa-ban"></i> Rejet final
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal pour ajouter une réponse finale -->
+<div class="modal" [class.show]="showResponseModal" *ngIf="showResponseModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{responseModalTitle}}</h5>
+        <button type="button" class="close" (click)="cancelResponse()">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="adminResponse">Votre réponse:</label>
+          <textarea class="form-control" id="adminResponse" rows="3" [(ngModel)]="adminResponse"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelResponse()">Annuler</button>
+        <button type="button" class="btn" [class.btn-success]="responseAction === 'approve'" [class.btn-danger]="responseAction === 'reject'" (click)="submitResponse()">
+          {{responseAction === 'approve' ? 'Confirmer l\'approbation' : 'Confirmer le rejet'}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

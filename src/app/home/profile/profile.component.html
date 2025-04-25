@@ -1,0 +1,217 @@
+<div class="profile-container" *ngIf="user">
+  <!-- Admin User List Section -->
+  <div class="users-list" *ngIf="isAdmin">
+    <div class="user-list-header">
+      <h2>Utilisateurs enregistrés</h2>
+      <app-search-bar (search)="onSearch($event)"></app-search-bar>
+    </div>
+    <div class="users-grid">
+      <div class="user-card" *ngFor="let registeredUser of filteredUsers" 
+           [class.selected]="selectedUser && selectedUser.id === registeredUser.id"
+           (click)="selectUser(registeredUser)">
+        <img [src]="registeredUser.profileImage || 'assets/default-profile.png'" alt="Profile" class="user-avatar">
+        <div class="user-info">
+          <h3>{{ registeredUser.firstName }} {{ registeredUser.lastName }}</h3>
+          <p>{{ registeredUser.email }}</p>
+          <p>{{ registeredUser.professionalInfo.position || 'Poste non défini' }}</p>
+        </div>
+      </div>
+    </div>
+    <button *ngIf="selectedUser" class="btn-back" (click)="clearSelectedUser()">
+      Retour à mon profil
+    </button>
+
+    <!-- Section des demandes -->
+    <h2>Demandes des employés</h2>
+    <div class="requests-list">
+      <div class="request-card" *ngFor="let request of requests">
+        <p>Type de demande: {{ request.requestType }}</p>
+        <p>Status: {{ request.status }}</p>
+        <p>Date de création: {{ request.createdAt | date }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Details Section -->
+  <div class="profile-details">
+    <div class="profile-header">
+      <div class="profile-image-container">
+        <img [src]="(selectedUser || user).profileImage || 'assets/default-profile.png'" alt="Profile" class="profile-image">
+        <div class="image-actions" *ngIf="canEdit()">
+          <label class="btn-upload" for="profile-image">
+            <i class='bx bx-upload'></i>
+            Changer
+          </label>
+          <input type="file" id="profile-image" (change)="onImageChange($event)" accept="image/*" hidden>
+          <button class="btn-delete" *ngIf="(selectedUser || user).profileImage" (click)="deleteProfileImage()">
+            <i class='bx bx-trash'></i>
+            Supprimer
+          </button>
+        </div>
+      </div>
+
+      <div class="profile-info">
+        <h2>{{ (selectedUser || user).firstName }} {{ (selectedUser || user).lastName }}</h2>
+        <p>{{ (selectedUser || user).email }}</p>
+      </div>
+    </div>
+
+    <!-- Professional Information -->
+    <div class="info-section">
+      <div class="section-header">
+        <h3>Informations professionnelles</h3>
+        <button *ngIf="canEdit()" class="btn-edit" (click)="toggleEditMode()">
+          <i class='bx bx-edit'></i>
+          {{ editMode ? 'Annuler' : 'Modifier' }}
+        </button>
+      </div>
+
+      <div class="info-content" [class.edit-mode]="editMode">
+        <div class="info-grid">
+          <div class="info-item">
+            <label>ID Employé</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).professionalInfo.employeeId" [readonly]="!editMode">
+          </div>
+          <div class="info-item">
+            <label>Département</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).professionalInfo.department" [readonly]="!editMode">
+          </div>
+          <div class="info-item">
+            <label>Poste</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).professionalInfo.position" [readonly]="!editMode">
+          </div>
+          <div class="info-item">
+            <label>Grade</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).professionalInfo.grade" [readonly]="!editMode">
+          </div>
+          <div class="info-item">
+            <label>Date d'entrée</label>
+            <input type="date" [(ngModel)]="(selectedUser || user).professionalInfo.joinDate" [readonly]="!editMode">
+          </div>
+          <div class="info-item">
+            <label>Type de contrat</label>
+            <select *ngIf="editMode" [(ngModel)]="(selectedUser || user).professionalInfo.contractType">
+              <option *ngFor="let option of contractTypeOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+            <input *ngIf="!editMode" type="text" [value]="(selectedUser || user).professionalInfo.contractType" readonly>
+          </div>
+          <div class="info-item">
+            <label>RIB</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).professionalInfo.rib" [readonly]="!editMode">
+          </div>
+          <div class="info-item">
+            <label>Banque</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).professionalInfo.bankName" [readonly]="!editMode">
+          </div>
+          <div class="info-item">
+            <label>CNSS</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).professionalInfo.cnss" [readonly]="!editMode">
+          </div>
+          <div class="info-item">
+            <label>Mutuelle</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).professionalInfo.mutuelle" [readonly]="!editMode">
+          </div>
+        </div>
+
+        <div class="actions" *ngIf="editMode">
+          <button class="btn-cancel" (click)="cancelEdit()">Annuler</button>
+          <button class="btn-save" (click)="saveProfile()">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Information -->
+    <div class="info-section">
+      <div class="section-header">
+        <h3>Informations personnelles</h3>
+        <button *ngIf="canEdit()" class="btn-edit" (click)="toggleEditPersonalMode()">
+          <i class='bx bx-edit'></i>
+          {{ editPersonalMode ? 'Annuler' : 'Modifier' }}
+        </button>
+      </div>
+
+      <div class="info-content" [class.edit-mode]="editPersonalMode">
+        <div class="info-grid">
+          <div class="info-item">
+            <label>CIN</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).personalInfo.cin" [readonly]="!editPersonalMode">
+          </div>
+          <div class="info-item">
+            <label>Date de naissance</label>
+            <input type="date" [(ngModel)]="(selectedUser || user).personalInfo.dateOfBirth" [readonly]="!editPersonalMode">
+          </div>
+          <div class="info-item">
+            <label>Lieu de naissance</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).personalInfo.placeOfBirth" [readonly]="!editPersonalMode">
+          </div>
+          <div class="info-item">
+            <label>Nationalité</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).personalInfo.nationality" [readonly]="!editPersonalMode">
+          </div>
+          <div class="info-item">
+            <label>Situation familiale</label>
+            <select *ngIf="editPersonalMode" [(ngModel)]="(selectedUser || user).personalInfo.maritalStatus">
+              <option *ngFor="let option of maritalStatusOptions" [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+            <input *ngIf="!editPersonalMode" type="text" [value]="(selectedUser || user).personalInfo.maritalStatus" readonly>
+          </div>
+          <div class="info-item">
+            <label>Nombre d'enfants</label>
+            <input type="number" [(ngModel)]="(selectedUser || user).personalInfo.numberOfChildren" [readonly]="!editPersonalMode">
+          </div>
+          <div class="info-item">
+            <label>Adresse</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).personalInfo.address" [readonly]="!editPersonalMode">
+          </div>
+          <div class="info-item">
+            <label>Ville</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).personalInfo.city" [readonly]="!editPersonalMode">
+          </div>
+          <div class="info-item">
+            <label>Pays</label>
+            <input type="text" [(ngModel)]="(selectedUser || user).personalInfo.country" [readonly]="!editPersonalMode">
+          </div>
+          <div class="info-item">
+            <label>Téléphone</label>
+            <input type="tel" [(ngModel)]="(selectedUser || user).personalInfo.phoneNumber" [readonly]="!editPersonalMode">
+          </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="emergency-contact">
+          <h4>Contact d'urgence</h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Nom</label>
+              <input type="text" [(ngModel)]="(selectedUser || user).personalInfo.emergencyContact.name" [readonly]="!editPersonalMode">
+            </div>
+            <div class="info-item">
+              <label>Relation</label>
+              <input type="text" [(ngModel)]="(selectedUser || user).personalInfo.emergencyContact.relationship" [readonly]="!editPersonalMode">
+            </div>
+            <div class="info-item">
+              <label>Téléphone</label>
+              <input type="tel" [(ngModel)]="(selectedUser || user).personalInfo.emergencyContact.phoneNumber" [readonly]="!editPersonalMode">
+            </div>
+          </div>
+        </div>
+
+        <div class="actions" *ngIf="editPersonalMode">
+          <button class="btn-cancel" (click)="cancelPersonalEdit()">Annuler</button>
+          <button class="btn-save" (click)="savePersonalInfo()">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert success" *ngIf="saveSuccess">
+      Les modifications ont été enregistrées avec succès.
+    </div>
+    <div class="alert error" *ngIf="saveError">
+      Une erreur s'est produite lors de l'enregistrement des modifications.
+    </div>
+  </div>
+</div>

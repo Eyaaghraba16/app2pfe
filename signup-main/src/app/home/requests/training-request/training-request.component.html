@@ -1,0 +1,63 @@
+<div class="form-container">
+  <div class="form-header">
+    <h2>{{ editMode ? 'Modifier la demande de formation' : 'Nouvelle demande de formation' }}</h2>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" #trainingForm="ngForm">
+    <div class="form-group">
+      <label>Titre de la formation</label>
+      <input type="text" [(ngModel)]="request.title" name="title" required>
+    </div>
+
+    <div class="form-group">
+      <label>Organisme de formation</label>
+      <input type="text" [(ngModel)]="request.organization" name="organization" required>
+    </div>
+
+    <div class="form-group">
+      <label>Date de début</label>
+      <input type="date" [(ngModel)]="request.startDate" name="startDate" required>
+    </div>
+
+    <div class="form-group">
+      <label>Date de fin</label>
+      <input type="date" [(ngModel)]="request.endDate" name="endDate" required>
+    </div>
+
+    <div class="form-group">
+      <label>Type de formation</label>
+      <select [(ngModel)]="request.trainingType" name="trainingType" required>
+        <option value="technical">Technique</option>
+        <option value="soft">Soft Skills</option>
+        <option value="certification">Certification</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Objectifs de la formation</label>
+      <textarea [(ngModel)]="request.objectives" name="objectives" rows="4" required></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Coût estimé (en DH)</label>
+      <input type="number" [(ngModel)]="request.cost" name="cost" required>
+    </div>
+
+    <div class="form-group">
+      <label>Documents (Programme, devis, etc.)</label>
+      <input type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" multiple>
+      <small>Formats acceptés: PDF, DOC, DOCX</small>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="cancel()">
+        <i class='bx bx-x'></i>
+        Annuler
+      </button>
+      <button type="submit" class="btn-submit" [disabled]="!trainingForm.form.valid">
+        <i class='bx bx-check'></i>
+        {{ editMode ? 'Enregistrer' : 'Soumettre' }}
+      </button>
+    </div>
+  </form>
+</div>

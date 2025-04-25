@@ -1,0 +1,62 @@
+<div class="request-form-container">
+  <h2>{{ editMode ? 'Modifier la demande de document' : 'Nouvelle demande de document' }}</h2>
+  
+  <form [formGroup]="documentForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="documentType">Type de document</label>
+      <select id="documentType" formControlName="documentType" class="form-control">
+        <option value="">Sélectionnez un type de document</option>
+        <option *ngFor="let type of documentTypes" [value]="type">{{ type }}</option>
+      </select>
+      <div class="error-message" *ngIf="documentForm?.get('documentType')?.invalid && documentForm?.get('documentType')?.touched">
+        Le type de document est requis
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="reason">Motif de la demande</label>
+      <textarea id="reason" formControlName="reason" class="form-control" rows="4"></textarea>
+      <div class="error-message" *ngIf="documentForm?.get('reason')?.invalid && documentForm?.get('reason')?.touched">
+        Le motif de la demande est requis
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="urgency">Niveau d'urgence</label>
+      <select id="urgency" formControlName="urgency" class="form-control">
+        <option *ngFor="let level of urgencyLevels" [value]="level.value">{{ level.label }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="purpose">Objectif du document</label>
+      <input type="text" id="purpose" formControlName="purpose" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label for="language">Langue du document</label>
+      <select id="language" formControlName="language" class="form-control">
+        <option value="fr">Français</option>
+        <option value="en">Anglais</option>
+        <option value="ar">Arabe</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="copies">Nombre de copies</label>
+      <input type="number" id="copies" formControlName="copies" class="form-control" min="1">
+    </div>
+
+    <div class="form-group">
+      <label for="comments">Commentaires additionnels</label>
+      <textarea id="comments" formControlName="comments" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="onCancel()">Annuler</button>
+      <button type="submit" class="btn-submit" [disabled]="!documentForm.valid">
+        {{ editMode ? 'Modifier' : 'Soumettre' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,214 @@
+<div class="details-container" *ngIf="request">
+  <div class="header">
+    <h2>Détails de la Demande</h2>
+    <div class="header-actions">
+      <button class="btn-back" (click)="onBack()">
+        <i class='bx bx-arrow-back'></i>
+        Retour
+      </button>
+      <button class="btn-edit" *ngIf="request.status.toLowerCase() === 'en attente'" (click)="onEdit()">
+        <i class='bx bx-edit'></i>
+        Éditer
+      </button>
+      <button class="btn-delete" (click)="onDelete()">
+        <i class='bx bx-trash'></i>
+        Supprimer
+      </button>
+    </div>
+  </div>
+
+  <div class="request-info">
+    <div class="info-group">
+      <label>Type:</label>
+      <span>{{ getRequestTypeLabel(request.type) }}</span>
+    </div>
+
+    <div class="info-group">
+      <label>Statut:</label>
+      <div class="status-container">
+        <span [class]="getStatusClass(request.status)" class="status-badge">
+          {{ getStatusLabel(request.status) }}
+        </span>
+        
+        <!-- Affichage de l'observation du chef si elle existe -->
+        <div class="chef-observation" *ngIf="request.chefObservation && (request.status === 'Chef approuvé' || request.status === 'Chef rejeté')" 
+             style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; border-left: 4px solid #6c757d;">
+          <h4 style="margin-top: 0; font-size: 14px; color: #495057;">Observation du chef:</h4>
+          <p style="margin-bottom: 0; font-style: italic; color: #6c757d;">{{ request.chefObservation }}</p>
+          <p *ngIf="request.chefProcessedDate" style="margin-top: 5px; font-size: 12px; color: #6c757d;">
+            Traité le {{ formatDate(request.chefProcessedDate) }} par {{ request.chefProcessedBy || 'Chef' }}
+          </p>
+        </div>
+        
+        <!-- Affichage de la réponse de l'admin si elle existe -->
+        <div class="admin-response" *ngIf="request.adminResponse && (request.status === 'Approuvée' || request.status === 'Rejetée')" 
+             style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff;">
+          <h4 style="margin-top: 0; font-size: 14px; color: #495057;">Réponse finale:</h4>
+          <p style="margin-bottom: 0; font-style: italic; color: #6c757d;">{{ request.adminResponse }}</p>
+          <p *ngIf="request.adminProcessedDate" style="margin-top: 5px; font-size: 12px; color: #6c757d;">
+            Traité le {{ formatDate(request.adminProcessedDate) }} par {{ request.adminProcessedBy || 'Admin' }}
+          </p>
+        </div>
+        
+        <div class="status-message" *ngIf="!isAdmin && request.status.toLowerCase() === 'en attente'">
+          Votre demande est en cours de traitement
+        </div>
+      </div>
+    </div>
+
+    <div class="info-group">
+      <label>Date:</label>
+      <span>{{ formatDate(request.date) }}</span>
+    </div>
+
+    <div class="info-group" *ngIf="request.description">
+      <label>Description:</label>
+      <span>{{ request.description }}</span>
+    </div>
+
+    <ng-container *ngIf="request.details && isAdmin">
+      <div class="details-section">
+        <h3>Informations supplémentaires</h3>
+        
+        <ng-container [ngSwitch]="request.type.toLowerCase()">
+          <!-- Loan Request Details -->
+          <ng-container *ngSwitchCase="'prêt'">
+            <div class="info-group" *ngIf="request.details.loanAmount !== undefined">
+              <label>Montant:</label>
+              <span>{{ request.details.loanAmount }} DH</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.loanReason">
+              <label>Motif:</label>
+              <span>{{ request.details.loanReason }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.monthlyPayment !== undefined">
+              <label>Mensualité:</label>
+              <span>{{ request.details.monthlyPayment }} DH</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.duration !== undefined">
+              <label>Durée:</label>
+              <span>{{ request.details.duration }} mois</span>
+            </div>
+          </ng-container>
+
+          <!-- Document Request Details -->
+          <ng-container *ngSwitchCase="'document'">
+            <div class="info-group" *ngIf="request.details.documentType">
+              <label>Type de document:</label>
+              <span>{{ request.details.documentType }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.reason">
+              <label>Motif:</label>
+              <span>{{ request.details.reason }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.urgency">
+              <label>Urgence:</label>
+              <span>{{ request.details.urgency === 'high' ? 'Haute' : request.details.urgency === 'low' ? 'Basse' : 'Normale' }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.purpose">
+              <label>Objectif:</label>
+              <span>{{ request.details.purpose }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.language">
+              <label>Langue:</label>
+              <span>{{ 
+                request.details.language === 'fr' ? 'Français' :
+                request.details.language === 'en' ? 'Anglais' :
+                request.details.language === 'ar' ? 'Arabe' :
+                request.details.language
+              }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.copies !== undefined">
+              <label>Copies:</label>
+              <span>{{ request.details.copies }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.comments">
+              <label>Commentaires:</label>
+              <span>{{ request.details.comments }}</span>
+            </div>
+          </ng-container>
+
+          <!-- Training Request Details -->
+          <ng-container *ngSwitchCase="'formation'">
+            <div class="info-group" *ngIf="request.details.trainingType">
+              <label>Type de formation:</label>
+              <span>{{ request.details.trainingType }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.startDate">
+              <label>Date de début:</label>
+              <span>{{ formatDate(request.details.startDate) }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.endDate">
+              <label>Date de fin:</label>
+              <span>{{ formatDate(request.details.endDate) }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.objectives">
+              <label>Objectifs:</label>
+              <span>{{ request.details.objectives }}</span>
+            </div>
+            <div class="info-group" *ngIf="request.details.cost !== undefined">
+              <label>Coût:</label>
+              <span>{{ request.details.cost }} DH</span>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
+
+    <!-- Actions pour le chef (pour toutes les demandes en attente) -->
+    <div class="chef-actions" *ngIf="isChef && !isAdmin && request.status.toLowerCase() === 'en attente'">
+      <!-- Champ d'observation pour le chef -->
+      <div class="observation-field" style="margin-bottom: 15px;">
+        <label for="chefObservation" style="display: block; margin-bottom: 5px; font-weight: bold;">Observation:</label>
+        <textarea id="chefObservation" #chefObservationInput rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+          placeholder="Ajoutez votre observation ici..."></textarea>
+      </div>
+      
+      <!-- Boutons d'action -->
+      <div class="actions">
+        <button class="btn-reject" (click)="rejectRequestWithObservation(chefObservationInput.value)">
+          <i class='bx bx-x'></i>
+          Rejeter en tant que chef
+        </button>
+        <button class="btn-approve" (click)="approveRequestWithObservation(chefObservationInput.value)">
+          <i class='bx bx-check'></i>
+          Approuver en tant que chef
+        </button>
+      </div>
+    </div>
+
+    <!-- Actions pour l'admin (peut approuver/rejeter toutes les demandes) -->
+    <div class="actions" *ngIf="isAdmin && !isChef && request.status.toLowerCase() === 'en attente'">
+      <button class="btn-reject" (click)="rejectRequest()">
+        <i class='bx bx-x'></i>
+        Rejeter
+      </button>
+      <button class="btn-approve" (click)="approveRequest()">
+        <i class='bx bx-check'></i>
+        Approuver
+      </button>
+    </div>
+
+    <!-- Actions pour l'admin sur les demandes déjà traitées par un chef -->
+    <div class="admin-actions" *ngIf="isAdmin && (request.status.toLowerCase() === 'chef approuvé' || request.status.toLowerCase() === 'chef rejeté')">
+      <!-- Champ d'observation pour l'admin -->
+      <div class="observation-field" style="margin-bottom: 15px;">
+        <label for="adminObservation" style="display: block; margin-bottom: 5px; font-weight: bold;">Votre décision finale:</label>
+        <textarea id="adminObservation" #adminObservationInput rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+          placeholder="Ajoutez votre décision finale ici..."></textarea>
+      </div>
+      
+      <!-- Boutons d'action pour l'admin -->
+      <div class="actions">
+        <button class="btn-reject" (click)="rejectRequestWithObservation(adminObservationInput.value, true)">
+          <i class='bx bx-x'></i>
+          Rejeter définitivement
+        </button>
+        <button class="btn-approve" (click)="approveRequestWithObservation(adminObservationInput.value, true)">
+          <i class='bx bx-check'></i>
+          Approuver définitivement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+<div class="container">
+  <!-- Login Form -->
+  <div class="form-box login" *ngIf="isLogin">
+    <form (ngSubmit)="onLoginSubmit()">
+      <h1>Login</h1>
+      <div class="input-box">
+        <input type="text" [(ngModel)]="username" name="username" placeholder="Username" required>
+        <i class='bx bxs-user'></i>
+      </div>
+      <div class="input-box">
+        <input type="password" [(ngModel)]="password" name="password" placeholder="Password" required>
+        <i class='bx bxs-lock-alt'></i>
+      </div>
+      <div class="error-message" *ngIf="formError" style="color: red; margin-bottom: 10px; text-align: center;">
+        {{ formError }}
+      </div>
+      <div class="forgot-link">
+        <a routerLink="/forgot-password">Mot de passe oublié?</a>
+      </div>
+      <button type="submit" class="btn">Login</button>
+      <p>Don't have an account? <a (click)="toggleForm(false)">Register here</a></p>
+    </form>
+  </div>
+
+  <!-- Registration Form -->
+  <div class="form-box register" *ngIf="!isLogin">
+    <form (ngSubmit)="onRegisterSubmit()">
+      <h1>Registration</h1>
+      <div class="input-box">
+        <input type="text" [(ngModel)]="username" name="username" placeholder="Username" required>
+        <i class='bx bxs-user'></i>
+      </div>
+      <div class="input-box">
+        <input type="email" [(ngModel)]="email" name="email" placeholder="Email" required>
+        <i class='bx bxs-envelope'></i>
+      </div>
+      <div class="input-box">
+        <input type="password" [(ngModel)]="password" name="password" placeholder="Mot de passe" required>
+        <i class='bx bxs-lock-alt'></i>
+      </div>
+      <div class="input-box">
+        <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Confirmer le mot de passe" required>
+        <i class='bx bxs-lock-alt'></i>
+      </div>
+      <div class="error-message" *ngIf="formError" style="color: red; margin-bottom: 10px; text-align: center;">
+        {{ formError }}
+      </div>
+      <button type="submit" class="btn">Register</button>
+      <p>Already have an account? <a (click)="toggleForm(true)">Login here</a></p>
+    </form>
+  </div>
+</div>

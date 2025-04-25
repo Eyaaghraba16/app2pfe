@@ -1,0 +1,19 @@
+<div class="container">
+  <nav class="navbar">
+    <div class="user-profile">
+      <img src="assets/profile-placeholder.png" alt="Profile" class="profile-img">
+      <span>Mon Profil</span>
+    </div>
+    <ul class="nav-links">
+      <li><a routerLink="/home/welcome" routerLinkActive="active">Accueil</a></li>
+      <li><a routerLink="/home/requests" routerLinkActive="active">Mes Demandes</a></li>
+      <li><a routerLink="/home/profile" routerLinkActive="active">Mon Profil</a></li>
+      <li><a routerLink="/home/profiles-list" routerLinkActive="active">Liste des Profils</a></li>
+      <li><a (click)="logout()">Déconnexion</a></li>
+    </ul>
+  </nav>
+  
+  <div class="main-content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

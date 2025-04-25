@@ -1,0 +1,34 @@
+.edit-request-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+
+  mat-card {
+    padding: 24px;
+  }
+
+  mat-card-header {
+    margin-bottom: 20px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    mat-form-field {
+      width: 100%;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .loading-spinner {
+    margin: 40px auto;
+  }
+}

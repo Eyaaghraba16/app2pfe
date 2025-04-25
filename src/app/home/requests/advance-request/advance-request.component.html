@@ -1,0 +1,38 @@
+<div class="request-form-container">
+  <h2>{{ editMode ? 'Modifier la demande d\'avance' : 'Nouvelle demande d\'avance' }}</h2>
+  
+  <form [formGroup]="advanceForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="advanceAmount">Montant de l'avance (DT)</label>
+      <input type="number" id="advanceAmount" formControlName="advanceAmount" class="form-control" [max]="2000000">
+      <div class="error-message" *ngIf="advanceForm.get('advanceAmount')?.invalid && advanceForm.get('advanceAmount')?.touched">
+        <span *ngIf="advanceForm.get('advanceAmount')?.errors?.['required']">Le montant de l'avance est requis</span>
+        <span *ngIf="advanceForm.get('advanceAmount')?.errors?.['min']">Le montant doit être positif</span>
+        <span *ngIf="advanceForm.get('advanceAmount')?.errors?.['max']">Le montant ne doit pas dépasser 2 millions DT</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="advanceReason">Motif de l'avance</label>
+      <textarea id="advanceReason" formControlName="advanceReason" class="form-control"></textarea>
+      <div class="error-message" *ngIf="advanceForm.get('advanceReason')?.invalid && advanceForm.get('advanceReason')?.touched">
+        Le motif de l'avance est requis
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="attachments">Pièce jointe</label>
+      <input type="file" id="attachments" formControlName="attachments" class="form-control" multiple>
+      <div class="error-message" *ngIf="advanceForm.get('attachments')?.invalid && advanceForm.get('attachments')?.touched">
+        La pièce jointe est requise
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="onCancel()">Annuler</button>
+      <button type="submit" class="btn-submit" [disabled]="!advanceForm.valid">
+        {{ editMode ? 'Modifier' : 'Soumettre' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,31 @@
+<div class="form-container">
+    <div class="form-header">
+      <h2>{{ editMode ? 'Modifier la demande de document' : 'Nouvelle demande de document administratif' }}</h2>
+    </div>
+  
+    <form (ngSubmit)="onSubmit()" #docForm="ngForm">
+      <div class="form-group">
+        <label>Type de document</label>
+        <select [(ngModel)]="request.docType" name="docType" required>
+          <option value="certificat_travail">Certificat de travail</option>
+          <option value="attestation_salaire">Attestation de salaire</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+  
+      <div class="form-group">
+        <label>Motif de la demande</label>
+        <textarea [(ngModel)]="request.reason" name="reason" rows="4" required></textarea>
+      </div>
+  
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancel()">
+          <i class='bx bx-x'></i> Annuler
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="!docForm.form.valid">
+          <i class='bx bx-check'></i> {{ editMode ? 'Enregistrer' : 'Soumettre' }}
+        </button>
+      </div>
+    </form>
+  </div>
+  

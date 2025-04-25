@@ -1,0 +1,200 @@
+.details-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+
+    h2 {
+      margin: 0;
+      color: #333;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+  }
+
+  .info-group {
+    margin-bottom: 20px;
+    
+    label {
+      font-weight: 600;
+      color: #666;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .status-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+
+      .status-badge {
+        padding: 6px 12px;
+        border-radius: 15px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .status-message {
+        color: #666;
+        font-size: 14px;
+        font-style: italic;
+      }
+    }
+  }
+}
+
+// Status classes
+.status-pending {
+  background-color: #ffd700;
+  color: #000;
+}
+
+.status-chef-approved {
+  background-color: #8bc34a;
+  color: white;
+}
+
+.status-chef-rejected {
+  background-color: #ff9800;
+  color: white;
+}
+
+.status-approved {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.status-rejected {
+  background-color: #f44336;
+  color: white;
+}
+
+// Buttons
+.btn-approve, .btn-reject {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-approve {
+  background-color: #4CAF50;
+  color: white;
+  
+  &:hover {
+    background-color: #45a049;
+  }
+}
+
+.btn-reject {
+  background-color: #f44336;
+  color: white;
+  
+  &:hover {
+    background-color: #da190b;
+  }
+}
+
+// Details section
+.details-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+
+  h3 {
+    color: #333;
+    margin-bottom: 20px;
+  }
+}
+
+// Ajout des styles pour les boutons de navigation
+.btn-back,
+.btn-edit,
+.btn-delete {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+.btn-back {
+  background: #6c757d;
+  &:hover {
+    background: #5a6268;
+  }
+}
+
+.btn-edit {
+  background: #007bff;
+  &:hover {
+    background: #0069d9;
+  }
+}
+
+.btn-delete {
+  background: #dc3545;
+  &:hover {
+    background: #c82333;
+  }
+}
+
+.actions {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    i {
+      font-size: 20px;
+    }
+  }
+
+  .btn-approve {
+    background: #28a745;
+    color: white;
+    &:hover {
+      background: #218838;
+    }
+  }
+
+  .btn-reject {
+    background: #dc3545;
+    color: white;
+    &:hover {
+      background: #c82333;
+    }
+  }
+}

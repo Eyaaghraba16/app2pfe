@@ -1,0 +1,63 @@
+<div class="request-form-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Nouvelle demande</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="requestForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="fill">
+          <mat-label>Type de demande</mat-label>
+          <mat-select formControlName="type">
+            <mat-option *ngFor="let type of requestTypes" [value]="type.value">
+              <i class="fas" [ngClass]="type.icon"></i>
+              <span class="type-label">{{ type.label }}</span>
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="requestForm.get('type')?.hasError('required')">
+            Le type de demande est requis
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Date de début</mat-label>
+          <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+          <mat-error *ngIf="requestForm.get('startDate')?.hasError('required')">
+            La date de début est requise
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Date de fin</mat-label>
+          <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+          <mat-error *ngIf="requestForm.get('endDate')?.hasError('required')">
+            La date de fin est requise
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" rows="4"></textarea>
+          <mat-error *ngIf="requestForm.get('description')?.hasError('required')">
+            La description est requise
+          </mat-error>
+          <mat-error *ngIf="requestForm.get('description')?.hasError('minlength')">
+            La description doit contenir au moins 10 caractères
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-button type="button" routerLink="/dashboard">Annuler</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="!requestForm.valid || loading">
+            <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+            <span *ngIf="!loading">Envoyer la demande</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

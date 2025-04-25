@@ -1,0 +1,62 @@
+<div class="form-container">
+  <div class="form-header">
+    <h2>{{ editMode ? 'Modifier la demande de congé' : 'Nouvelle demande de congé' }}</h2>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" #leaveForm="ngForm">
+    <div class="form-group">
+      <label>Type de congé</label>
+      <select [(ngModel)]="request.leaveType" name="leaveType" required (change)="onLeaveTypeChange()">
+        <option value="annuel">Congé annuel (weekends inclus)</option>
+        <option value="paid">Congé payé</option>
+        <option value="unpaid">Congé sans solde</option>
+        <option value="sick">Congé maladie</option>
+        <option value="maternity">Congé maternité</option>
+        <option value="paternity">Congé paternité</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Date de début</label>
+      <input type="date" [(ngModel)]="request.startDate" name="startDate" required (change)="onStartDateChange($event)">
+    </div>
+
+    <div class="form-group">
+      <label>Date de fin</label>
+      <input type="date" [(ngModel)]="request.endDate" name="endDate" required [readonly]="request.leaveType === 'maternity' || request.leaveType === 'paternity'">
+      <small *ngIf="request.leaveType === 'maternity'" class="info-text">La date de fin est automatiquement calculée à 98 jours après la date de début (14 semaines)</small>
+      <small *ngIf="request.leaveType === 'paternity'" class="info-text">La date de fin est automatiquement calculée à 25 jours après la date de début</small>
+    </div>
+
+    <div class="form-group">
+      <label>Période de la journée</label>
+      <select [(ngModel)]="request.dayPart" name="dayPart" required>
+        <option value="full">Journée complète</option>
+        <option value="morning">Matin</option>
+        <option value="afternoon">Après-midi</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Motif</label>
+      <textarea [(ngModel)]="request.reason" name="reason" rows="4" required></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Documents justificatifs</label>
+      <input type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx">
+      <small>Formats acceptés: PDF, DOC, DOCX</small>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="cancel()">
+        <i class='bx bx-x'></i>
+        Annuler
+      </button>
+      <button type="submit" class="btn-submit" [disabled]="!leaveForm.form.valid">
+        <i class='bx bx-check'></i>
+        {{ editMode ? 'Enregistrer' : 'Soumettre' }}
+      </button>
+    </div>
+  </form>
+</div>

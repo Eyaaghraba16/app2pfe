@@ -1,0 +1,27 @@
+<div class="form-container">
+    <div class="form-header">
+      <h2>{{ editMode ? 'Modifier la demande d\'avance' : 'Nouvelle demande d\'avance' }}</h2>
+    </div>
+  
+    <form (ngSubmit)="onSubmit()" #advanceForm="ngForm">
+      <div class="form-group">
+        <label>Montant de l'avance (en DH)</label>
+        <input type="number" [(ngModel)]="request.amount" name="amount" required>
+      </div>
+  
+      <div class="form-group">
+        <label>Motif de l'avance</label>
+        <textarea [(ngModel)]="request.reason" name="reason" rows="4" required></textarea>
+      </div>
+  
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancel()">
+          <i class='bx bx-x'></i> Annuler
+        </button>
+        <button type="submit" class="btn-submit" [disabled]="!advanceForm.form.valid">
+          <i class='bx bx-check'></i> {{ editMode ? 'Enregistrer' : 'Soumettre' }}
+        </button>
+      </div>
+    </form>
+  </div>
+  

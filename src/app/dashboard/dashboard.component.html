@@ -1,0 +1,192 @@
+<div class="dashboard-container">
+  <nav class="sidebar">
+    <div class="logo">
+      <i class='bx bxs-dashboard'></i>
+      <span>Dashboard</span>
+    </div>
+    <ul class="nav-links">
+      <li>
+        <a href="#" class="active">
+          <i class='bx bxs-home'></i>
+          <span>Accueil</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <i class='bx bxs-user'></i>
+          <span>Profile</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <i class='bx bxs-cog'></i>
+          <span>Paramètres</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <i class='bx bxs-bell'></i>
+          <span>Notifications</span>
+        </a>
+      </li>
+      <li class="logout">
+        <a href="#">
+          <i class='bx bxs-log-out'></i>
+          <span>Déconnexion</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <main class="main-content">
+    <header>
+      <div class="header-content">
+        <h1>Tableau de bord</h1>
+        <div class="user-info">
+          <span>Bienvenue, {{username}}</span>
+          <i class='bx bxs-user-circle'></i>
+        </div>
+      </div>
+    </header>
+
+    <div class="dashboard-cards">
+      <div class="card">
+        <i class='bx bxs-user-account'></i>
+        <h3>Utilisateurs</h3>
+        <p>150</p>
+      </div>
+      <div class="card">
+        <i class='bx bxs-file'></i>
+        <h3>Demandes</h3>
+        <p>{{totalRequests}}</p>
+      </div>
+      <div class="card">
+        <i class='bx bxs-message'></i>
+        <h3>En attente</h3>
+        <p>{{pendingRequests}}</p>
+      </div>
+      <div class="card">
+        <i class='bx bxs-task'></i>
+        <h3>Traitées</h3>
+        <p>{{processedRequests}}</p>
+      </div>
+    </div>
+
+    <div class="header">
+      <h2>Tableau de bord</h2>
+      <button mat-raised-button color="primary" routerLink="/requests/new">
+        <mat-icon>add</mat-icon>
+        Nouvelle demande
+      </button>
+    </div>
+
+    <div class="requests-section">
+      <h3>{{ isAdmin ? 'Toutes les demandes' : 'Mes demandes' }}</h3>
+
+      <div class="requests-table">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Type</th>
+              <th>Date de début</th>
+              <th>Date de fin</th>
+              <th *ngIf="isAdmin">Utilisateur</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let request of requests">
+              <td>{{ request.id }}</td>
+              <td>{{ request.type }}</td>
+              <td>{{ formatDate(request.start_date) }}</td>
+              <td>{{ formatDate(request.end_date) }}</td>
+              <td *ngIf="isAdmin">{{ getUserFullName(request) }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="{
+                  'status-pending': request.status === 'en attente',
+                  'status-approved': request.status === 'approuvée',
+                  'status-rejected': request.status === 'rejetée'
+                }">
+                  {{ request.status }}
+                </span>
+              </td>
+              <td class="actions">
+                <button mat-icon-button color="primary" (click)="viewRequestDetails(request)">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" 
+                        (click)="navigateToEdit(request)"
+                        *ngIf="isEditableRequest(request)"
+                        [style.display]="'inline-flex'"
+                        [style.cursor]="'pointer'">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <ng-container *ngIf="isAdmin && request.status === 'en attente'">
+                  <button mat-icon-button color="accent" (click)="approveRequest(request)">
+                    <mat-icon>check_circle</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="rejectRequest(request)">
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </ng-container>
+              </td>
+            </tr>
+            <tr *ngIf="requests.length === 0">
+              <td [attr.colspan]="isAdmin ? 7 : 6" class="no-data">
+                Aucune demande trouvée
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal des détails de la demande -->
+    <div class="request-modal" *ngIf="selectedRequest">
+      <div class="modal-content">
+        <button class="close-modal" (click)="closeDetails()">
+          <mat-icon>close</mat-icon>
+        </button>
+        
+        <h3>Détails de la demande #{{ selectedRequest.id }}</h3>
+        
+        <div class="request-info">
+          <p><strong>Type:</strong> {{ selectedRequest.type }}</p>
+          <p><strong>Statut:</strong> {{ selectedRequest.status }}</p>
+          <p><strong>Date de début:</strong> {{ formatDate(selectedRequest.start_date) }}</p>
+          <p><strong>Date de fin:</strong> {{ formatDate(selectedRequest.end_date) }}</p>
+          <p><strong>Description:</strong> {{ selectedRequest.description }}</p>
+          
+          <ng-container *ngIf="isAdmin">
+            <p><strong>Utilisateur:</strong> {{ getUserFullName(selectedRequest) }}</p>
+            <p><strong>Email:</strong> {{ selectedRequest.user?.email }}</p>
+            <p><strong>Département:</strong> {{ selectedRequest.professional_info?.department }}</p>
+            <p><strong>Poste:</strong> {{ selectedRequest.professional_info?.position }}</p>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <div class="recent-activity">
+      <h2>Activités récentes</h2>
+      <div class="activity-list">
+        <div class="activity-item">
+          <i class='bx bxs-time'></i>
+          <div class="activity-details">
+            <p>Nouveau document ajouté</p>
+            <small>Il y a 2 heures</small>
+          </div>
+        </div>
+        <div class="activity-item">
+          <i class='bx bxs-time'></i>
+          <div class="activity-details">
+            <p>Mise à jour du profil</p>
+            <small>Il y a 4 heures</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

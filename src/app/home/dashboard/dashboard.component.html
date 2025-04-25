@@ -1,0 +1,22 @@
+<div class="dashboard-container">
+  <h1>Tableau de bord</h1>
+  
+  <div class="welcome-section">
+    <h2>Bienvenue, {{ currentUser?.firstName }} {{ currentUser?.lastName }}</h2>
+  </div>
+
+  <div class="recent-requests">
+    <h3>Demandes récentes</h3>
+    <div class="requests-list" *ngIf="recentRequests.length > 0">
+      <div class="request-item" *ngFor="let request of recentRequests">
+        <div class="request-type">{{ request.type }}</div>
+        <div class="request-description">{{ request.description }}</div>
+        <div class="request-status" [ngClass]="request.status.toLowerCase()">{{ request.status }}</div>
+        <div class="request-date">{{ request.date | date:'dd/MM/yyyy' }}</div>
+      </div>
+    </div>
+    <div class="no-requests" *ngIf="recentRequests.length === 0">
+      Aucune demande récente
+    </div>
+  </div>
+</div>

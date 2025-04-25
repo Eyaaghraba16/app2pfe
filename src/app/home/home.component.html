@@ -1,0 +1,24 @@
+<div class="container">
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="user-profile">
+      <img [src]="currentUser?.profileImage || 'assets/default-profile.png'" alt="Profile" class="profile-img">
+      <span>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+    </div>
+    
+    <ul class="nav-links">
+      <li><a routerLink="/home/welcome" routerLinkActive="active">Tableau de bord</a></li>
+      <li><a routerLink="/home/requests" routerLinkActive="active">Demandes</a></li>
+      <li><a routerLink="/home/profile" routerLinkActive="active">Profil</a></li>
+      <li *ngIf="currentUser?.email === 'admin@company.com'">
+        <a routerLink="/admin" routerLinkActive="active">Administration</a>
+      </li>
+      <li><a (click)="logout()" class="logout-link">Déconnexion</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

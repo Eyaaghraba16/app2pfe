@@ -1,0 +1,60 @@
+<div class="edit-request-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Modifier la demande</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="requestForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+        <mat-form-field appearance="fill">
+          <mat-label>Type de congé</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="congé maternité">Congé maternité</mat-option>
+            <mat-option value="congé paternité">Congé paternité</mat-option>
+            <mat-option value="congé parental">Congé parental</mat-option>
+          </mat-select>
+          <mat-error *ngIf="requestForm.get('type')?.hasError('required')">
+            Le type de congé est requis
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Date de début</mat-label>
+          <input matInput [matDatepicker]="startPicker" formControlName="start_date">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+          <mat-error *ngIf="requestForm.get('start_date')?.hasError('required')">
+            La date de début est requise
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Date de fin</mat-label>
+          <input matInput [matDatepicker]="endPicker" formControlName="end_date">
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+          <mat-error *ngIf="requestForm.get('end_date')?.hasError('required')">
+            La date de fin est requise
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" rows="4"></textarea>
+          <mat-error *ngIf="requestForm.get('description')?.hasError('required')">
+            La description est requise
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-button type="button" routerLink="/dashboard">Annuler</button>
+          <button mat-raised-button color="primary" type="submit" [disabled]="!requestForm.valid">
+            Enregistrer
+          </button>
+        </div>
+      </form>
+
+      <mat-spinner *ngIf="loading" diameter="40" class="loading-spinner"></mat-spinner>
+    </mat-card-content>
+  </mat-card>
+</div>

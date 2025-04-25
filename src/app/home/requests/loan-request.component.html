@@ -1,0 +1,87 @@
+<!-- Formulaire de Demande de Prêt -->
+<div class="form-container">
+    <div class="form-header">
+      <h2>{{ editMode ? 'Modifier la demande de prêt' : 'Nouvelle demande de prêt' }}</h2>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()" #loanForm="ngForm">
+      <div class="form-group">
+        <label>Montant demandé (en DH)</label>
+        <input type="number" [(ngModel)]="request.amount" name="amount" required>
+      </div>
+      
+      <div class="form-group">
+        <label>Durée du prêt (mois)</label>
+        <input type="number" [(ngModel)]="request.duration" name="duration" required>
+      </div>
+  
+      <div class="form-group">
+        <label>Motif</label>
+        <textarea [(ngModel)]="request.reason" name="reason" rows="4" required></textarea>
+      </div>
+  
+      <div class="form-group">
+        <label>Documents justificatifs</label>
+        <input type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx" multiple>
+        <small>Formats acceptés: PDF, DOC, DOCX</small>
+      </div>
+  
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancel()">Annuler</button>
+        <button type="submit" class="btn-submit" [disabled]="!loanForm.form.valid">Soumettre</button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Formulaire de Demande d'Avance -->
+  <div class="form-container">
+    <div class="form-header">
+      <h2>{{ editMode ? 'Modifier la demande d\'avance' : 'Nouvelle demande d\'avance' }}</h2>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()" #advanceForm="ngForm">
+      <div class="form-group">
+        <label>Montant demandé (en DH)</label>
+        <input type="number" [(ngModel)]="request.amount" name="amount" required>
+      </div>
+  
+      <div class="form-group">
+        <label>Motif</label>
+        <textarea [(ngModel)]="request.reason" name="reason" rows="4" required></textarea>
+      </div>
+  
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancel()">Annuler</button>
+        <button type="submit" class="btn-submit" [disabled]="!advanceForm.form.valid">Soumettre</button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Formulaire de Demande de Document Administratif -->
+  <div class="form-container">
+    <div class="form-header">
+      <h2>{{ editMode ? 'Modifier la demande de document administratif' : 'Nouvelle demande de document administratif' }}</h2>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()" #adminDocForm="ngForm">
+      <div class="form-group">
+        <label>Type de document</label>
+        <select [(ngModel)]="request.documentType" name="documentType" required>
+          <option value="certificat_travail">Certificat de travail</option>
+          <option value="fiche_paie">Fiche de paie</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+  
+      <div class="form-group">
+        <label>Motif</label>
+        <textarea [(ngModel)]="request.reason" name="reason" rows="4" required></textarea>
+      </div>
+  
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancel()">Annuler</button>
+        <button type="submit" class="btn-submit" [disabled]="!adminDocForm.form.valid">Soumettre</button>
+      </div>
+    </form>
+  </div>
+  

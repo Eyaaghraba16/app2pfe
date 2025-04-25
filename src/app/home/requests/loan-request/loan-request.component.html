@@ -1,0 +1,52 @@
+<div class="request-form-container">
+  <h2>{{ editMode ? 'Modifier la demande de prêt' : 'Nouvelle demande de prêt' }}</h2>
+  
+  <div class="loan-info" *ngIf="loanInfo.monthlySalary > 0">
+    <div class="salary-info">
+      <p class="monthly-salary">Salaire mensuel : {{ loanInfo.monthlySalary | currency:'EUR' }}</p>
+      <p class="loan-cap">Plafond de prêt disponible : {{ loanInfo.loanCap | currency:'EUR' }}</p>
+      <p class="loan-cap-info">(40% de votre salaire mensuel)</p>
+    </div>
+  </div>
+
+  <form [formGroup]="loanForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="loanType">Type de prêt</label>
+      <select id="loanType" formControlName="loanType" class="form-control">
+        <option value="personal">Prêt personnel</option>
+        <option value="car">Prêt automobile</option>
+        <option value="house">Prêt immobilier</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="loanAmount">Montant du prêt (DT)</label>
+      <input type="number" id="loanAmount" formControlName="loanAmount" class="form-control" [max]="loanInfo.loanCap">
+      <div class="error-message" *ngIf="loanForm.get('loanAmount')?.errors?.['required'] && loanForm.get('loanAmount')?.touched">
+        Le montant du prêt est requis
+      </div>
+      <div class="error-message" *ngIf="(loanForm.get('loanAmount')?.errors?.['max'] || loanForm.get('loanAmount')?.errors?.['exceedsLoanCap']) && loanForm.get('loanAmount')?.touched">
+        Le montant ne peut pas dépasser {{ loanInfo.loanCap | currency:'EUR' }} (40% de votre salaire)
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="attachments">Pièce jointe</label>
+      <input type="file" id="attachments" formControlName="attachments" class="form-control" multiple>
+      <div class="error-message" *ngIf="loanForm.get('attachments')?.invalid && loanForm.get('attachments')?.touched">
+        La pièce jointe est requise
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="onCancel()">
+        <i class='bx bx-x'></i>
+        Annuler
+      </button>
+      <button type="submit" class="btn-submit" [disabled]="!loanForm.valid">
+        <i class='bx bx-check'></i>
+        {{ editMode ? 'Modifier' : 'Soumettre' }}
+      </button>
+    </div>
+  </form>
+</div>
