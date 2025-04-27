@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RequestsService } from '../requests.service';
 
+import { AuthService } from '../../../auth/auth.service';
+
 @Component({
   selector: 'app-work-certificate-request',
   standalone: true,
@@ -168,6 +170,7 @@ import { RequestsService } from '../requests.service';
     }
   `]
 })
+
 export class WorkCertificateRequestComponent implements OnInit {
   requestId: string | null = null;
   request = {
@@ -184,7 +187,8 @@ export class WorkCertificateRequestComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private requestsService: RequestsService
+    private requestsService: RequestsService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -218,7 +222,28 @@ export class WorkCertificateRequestComponent implements OnInit {
     if (this.requestId) {
       this.requestsService.updateCertificateRequest(this.requestId, this.request);
     } else {
-      this.requestsService.addCertificateRequest(this.request);
+      // Construction de l'objet Request pour addRequest
+      const currentUser = this.authService.currentUserValue;
+const newRequest = {
+  requestType: 'work_certificate',
+  id: Math.random().toString(36).substr(2, 9),
+  type: "Attestation de travail",
+  date: new Date().toISOString(),
+  status: 'En attente',
+  userId: currentUser?.id || '',
+  details: {
+  purpose: this.request.purpose,
+  otherPurpose: this.request.otherPurpose,
+  language: this.request.language,
+  copies: String(this.request.copies),
+  comments: this.request.comments,
+  documents: this.request.documents as any // File cannot be FormDataEntryValue, but we cast for now
+},
+  description: `Demande d'attestation de travail - ${this.request.purpose}`,
+  createdAt: new Date().toISOString(),
+  user: currentUser
+};
+this.requestsService.addRequest(newRequest);
     }
     this.router.navigate(['/home/requests']);
   }

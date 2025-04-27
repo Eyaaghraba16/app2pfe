@@ -91,6 +91,52 @@ export interface Request {
   providedIn: 'root'
 })
 export class RequestsService {
+  addRequest(newRequest: { requestType: string; id: string; type: string; date: string; status: string; userId: string; details: { [k: string]: FormDataEntryValue; }; description: string; createdAt: string; user: import("../../models/user.model").User | null; }): Observable<boolean> {
+    // Ajoute la nouvelle demande à la liste
+    this.requests.push(newRequest as any);
+    this.saveRequests();
+
+    // Créer une notification ciblée pour chaque chef et chaque admin
+    const currentUser = this.authService.currentUserValue;
+    if (currentUser && this.notificationService) {
+      const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const chefs = allUsers.filter((u: any) => u.role === 'chef');
+      const admins = allUsers.filter((u: any) => u.role === 'admin');
+      // Notifier les chefs
+      // Message commun pour chef et admin
+      const nomEmploye = `${(currentUser.firstName || '').trim()} ${(currentUser.lastName || '').trim()}`.trim();
+      const notifMessage = `${nomEmploye} a ajouté une nouvelle demande`;
+      // Notifier chaque chef SANS doublon non lu
+      chefs.forEach((chef: any) => {
+        // Supprime toutes les anciennes notifications "a ajouté une nouvelle demande" pour ce chef
+        this.notificationService.getNotifications()
+          .filter(n => n.targetUserId === chef.id && n.message === notifMessage)
+          .forEach(n => this.notificationService.deleteNotification(n.id));
+        // Ajoute la nouvelle notification
+        this.notificationService.addTargetedNotification(
+          notifMessage,
+          'info',
+          chef.id,
+          `/home/requests/${newRequest.id}`
+        );
+      });
+      // Notifier chaque admin SANS doublon non lu
+      admins.forEach((admin: any) => {
+        // Supprime toutes les anciennes notifications "a ajouté une nouvelle demande" pour cet admin
+        this.notificationService.getNotifications()
+          .filter(n => n.targetUserId === admin.id && n.message === notifMessage)
+          .forEach(n => this.notificationService.deleteNotification(n.id));
+        // Ajoute la nouvelle notification
+        this.notificationService.addTargetedNotification(
+          notifMessage,
+          'info',
+          admin.id,
+          `/admin/requests/details/${newRequest.id}`
+        );
+      });
+    }
+    return of(true);
+  }
   private requestsSubject = new BehaviorSubject<Request[]>([]);
   private requests: Request[] = [];
   private leaveTypes: { [key: string]: string } = {
@@ -276,7 +322,7 @@ export class RequestsService {
         chefProcessedDate: new Date().toISOString()
       };
 
-      // Créer des notifications
+      // Créer notification pour l'employé
       const employeeNotification = {
         id: Date.now().toString(),
         message: `Votre demande de ${request.type} a été ${newStatus === 'Chef approuvé' ? 'approuvée' : 'rejetée'} par le chef.`,
@@ -286,23 +332,38 @@ export class RequestsService {
         link: `/home/requests/details/${requestId}`
       };
 
-      const adminNotification = {
-        id: (Date.now() + 1).toString(),
-        message: `Une demande de ${request.type} a été ${newStatus === 'Chef approuvé' ? 'approuvée' : 'rejetée'} par le chef.`,
-        type: 'info' as 'info',
-        timestamp: new Date(),
-        read: false,
-        link: `/admin/requests/details/${requestId}`
-      };
+      // Notification pour le chef (lui-même)
+      this.notificationService.addTargetedNotification(
+        newStatus === 'Chef approuvé'
+          ? `Vous avez approuvé la demande de ${request.type}. L'admin prendra la décision finale.`
+          : `Vous avez rejeté la demande de ${request.type}. L'admin prendra la décision finale.`,
+        newStatus === 'Chef approuvé' ? 'success' : 'warning',
+        currentUser.id,
+        `/home/requests/details/${requestId}`
+      );
 
-      notifications.push(employeeNotification, adminNotification);
+      // Notification pour l'admin
+      const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const admins = allUsers.filter((u: any) => u.role === 'admin');
+      admins.forEach((admin: any) => {
+        this.notificationService.addTargetedNotification(
+          `Le chef ${currentUser.firstName || ''} ${currentUser.lastName || ''} a ${newStatus === 'Chef approuvé' ? 'approuvé' : 'rejeté'} une demande de ${request.type} de ${(request.user?.firstname || '')} ${(request.user?.lastname || '')}.`,
+          'info',
+          admin.id,
+          `/admin/requests/details/${requestId}`
+        );
+      });
+
+      // Notification pour l'employé (toujours via addTargetedNotification)
+      this.notificationService.addTargetedNotification(
+        employeeNotification.message,
+        employeeNotification.type,
+        request.userId,
+        employeeNotification.link
+      );
+      notifications.push(employeeNotification);
       
-      // Ajouter les notifications au service de notification
-      if (this.notificationService) {
-        notifications.forEach(notification => {
-          this.notificationService.addNotification(notification);
-        });
-      }
+      // Plus besoin d'appeler addNotification en boucle, tout est ciblé
     } else if (isAdmin) {
       // L'admin peut approuver/rejeter toutes les demandes
       // Pour les demandes de congé et formation, l'admin ne peut approuver/rejeter
@@ -333,14 +394,26 @@ export class RequestsService {
         link: `/home/requests/details/${requestId}`
       };
 
+      // Notifier le chef (si la demande a été traitée par un chef)
+      if (request.chefProcessedBy) {
+        this.notificationService.addTargetedNotification(
+          `L'admin a ${status === 'Approuvée' ? 'approuvé' : 'rejeté'} définitivement la demande de ${request.type} de ${(request.user?.firstname || '')} ${(request.user?.lastname || '')}.`,
+          status === 'Approuvée' ? 'success' : 'error',
+          request.chefProcessedBy,
+          `/admin/requests/details/${requestId}`
+        );
+      }
+
+      // Notification pour l'employé (toujours via addTargetedNotification)
+      this.notificationService.addTargetedNotification(
+        employeeNotification.message,
+        employeeNotification.type,
+        request.userId,
+        employeeNotification.link
+      );
       notifications.push(employeeNotification);
       
-      // Ajouter les notifications au service de notification
-      if (this.notificationService) {
-        notifications.forEach(notification => {
-          this.notificationService.addNotification(notification);
-        });
-      }
+      // Plus besoin d'appeler addNotification en boucle, tout est ciblé
     } else {
       // Les utilisateurs normaux ne peuvent pas changer le statut des demandes
       return of({ success: false });
@@ -597,9 +670,9 @@ export class RequestsService {
     reason: string;
     dayPart?: 'full' | 'morning' | 'afternoon';
     includeWeekends?: boolean;
-  }): boolean {
+  }): Observable<boolean> {
     const request = this.findRequestById(requestId);
-    if (!request) return false;
+    if (!request) return of(false);
 
     const includeWeekends = data.leaveType === 'annuel' || data.leaveType === 'maternity' || data.leaveType === 'paternity';
     const days = this.calculateWorkingDays(data.startDate, data.endDate, includeWeekends, data.dayPart);
@@ -608,7 +681,7 @@ export class RequestsService {
                    data.dayPart === 'morning' ? ' (matin)' : ' (après-midi)';
     
     const index = this.requests.findIndex(r => r.id === requestId);
-    if (index === -1) return false;
+    if (index === -1) return of(false);
     
     this.requests[index] = {
       ...this.requests[index],
@@ -625,7 +698,7 @@ export class RequestsService {
     };
     
     this.saveRequests();
-    return true;
+    return of(true);
   }
 
   // Méthode pour mettre à jour une demande de formation

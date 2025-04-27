@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RequestsService, Request } from '../requests.service';
+import { AuthService } from '../../../auth/auth.service';
+import { RequestsService } from '../../../services/requests.service';
+import type { Request } from '../../../models/request.model';
 
 @Component({
   selector: 'app-request-edit',
@@ -173,8 +175,7 @@ export class RequestEditComponent implements OnInit {
  ngOnInit() {
      const id = this.route.snapshot.paramMap.get('id');
      if (id) {
-         const requestId = Number(id);
-         this.request = this.requestsService.getRequestById(requestId);
+         this.request = this.requestsService.getRequestById(id);
          
          if (!this.request) {
              this.cancel(); // Redirigez si la demande n'est pas trouvée

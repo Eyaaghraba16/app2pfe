@@ -4,13 +4,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RequestsService } from '../requests.service';
 import { CommonModule } from '@angular/common';
 import { EmployeeService } from '../../../services/employee.service';
+import { AuthService } from '../../../auth/auth.service';
+import { FormsModule } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-loan-request',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './loan-request.component.html',
-  styleUrls: ['./loan-request.component.scss']
+  styleUrls: ['./loan-request.component.scss'],
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, CurrencyPipe],
 })
 export class LoanRequestComponent implements OnInit {
   requestId: string | null = null;
@@ -23,6 +26,7 @@ export class LoanRequestComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private requestsService: RequestsService,
+    private authService: AuthService,
     private employeeService: EmployeeService
   ) {
     this.loanInfo = this.employeeService.getMaximumLoanInfo();
@@ -75,7 +79,25 @@ export class LoanRequestComponent implements OnInit {
     if (this.requestId) {
       this.requestsService.updateLoanRequest(this.requestId, formData);
     } else {
-      this.requestsService.addLoanRequest(formData);
+      // Construction de l'objet Request pour addRequest
+      const currentUser = this.authService.currentUserValue;
+      const newRequest = {
+        requestType: 'loan',
+        id: Math.random().toString(36).substr(2, 9),
+        type: "Prêt bancaire",
+        date: new Date().toISOString(),
+        status: 'En attente',
+        userId: currentUser?.id || '',
+        details: {
+          loanAmount: String(this.loanForm.value.loanAmount),
+          reason: '',
+          documents: this.loanForm.value.attachments as any
+        },
+        description: `Demande de prêt bancaire - ${this.loanForm.value.loanAmount} DT`,
+        createdAt: new Date().toISOString(),
+        user: currentUser
+      };
+      this.requestsService.addRequest(newRequest);
     }
     this.router.navigate(['/home/requests']);
   }

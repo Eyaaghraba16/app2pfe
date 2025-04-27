@@ -10,12 +10,14 @@ export interface TrainingTheme {
   topics: string[];
 }
 
+import { AuthService } from '../../../auth/auth.service';
+
 @Component({
   selector: 'app-training-request',
+  templateUrl: './training-request.component.html',
+  styleUrls: ['./training-request.component.scss'],
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './training-request.component.html',
-  styleUrls: ['./training-request.component.scss']
 })
 export class TrainingRequestComponent implements OnInit {
   departments = [
@@ -81,9 +83,10 @@ export class TrainingRequestComponent implements OnInit {
   @ViewChild('trainingForm') trainingForm!: NgForm;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
-    private requestsService: RequestsService
+    private route: ActivatedRoute,
+    private requestsService: RequestsService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -168,15 +171,37 @@ export class TrainingRequestComponent implements OnInit {
       trainingType: this.request.trainingType,
       objectives: this.request.objectives,
       cost: this.request.cost,
-      department: this.selectedDepartment,
-      theme: this.selectedTheme,
-      topic: this.selectedTopic
+      department: this.selectedDepartment ? this.selectedDepartment : '',
+      theme: this.selectedTheme ? this.selectedTheme : '',
+      topic: this.selectedTopic ? this.selectedTopic : ''
     };
 
     if (this.editMode && this.requestId) {
       this.requestsService.updateTrainingRequest(this.requestId, trainingRequestData);
     } else {
-      this.requestsService.addTrainingRequest(trainingRequestData);
+      // Construction de l'objet Request pour addRequest
+      const currentUser = this.authService.currentUserValue;
+      const newRequest = {
+        requestType: 'training',
+        id: Math.random().toString(36).substr(2, 9),
+        type: "Formation",
+        date: new Date().toISOString(),
+        status: 'En attente',
+        userId: currentUser?.id || '',
+        details: {
+  title: this.request.title,
+  organization: this.request.organization,
+  startDate: this.request.startDate,
+  endDate: this.request.endDate,
+  trainingType: this.request.trainingType,
+  objectives: this.request.objectives,
+  cost: String(this.request.cost)
+},
+        description: `Demande de formation - ${this.request.title}`,
+        createdAt: new Date().toISOString(),
+        user: currentUser
+      };
+      this.requestsService.addRequest(newRequest);
     }
 
     this.router.navigate(['/home/requests']);

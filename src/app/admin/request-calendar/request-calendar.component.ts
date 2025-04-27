@@ -1,98 +1,124 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import type { Request } from '../../models/request.model';
 import { RequestsService } from '../../services/requests.service';
-import { Request } from '../../models/request.model';
 
 @Component({
   selector: 'app-request-calendar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './request-calendar.component.html',
   styleUrls: ['./request-calendar.component.scss']
 })
 export class RequestCalendarComponent implements OnInit {
-  requests: Request[] = [];
   selectedRequest: Request | null = null;
   showRequestDetails: boolean = false;
   
-  // Grouper les demandes par mois et jour
-  requestsByMonth: { [key: string]: Request[] } = {};
-  currentMonth: Date = new Date();
-  daysInMonth: number[] = [];
+  // Données du calendrier
   weekdays: string[] = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
   months: string[] = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  
+  // Données des demandes
+  requests: Request[] = []; // toujours synchronisé avec le service
+  requestsByDay: Map<number, Request[]> = new Map();
+  filteredRequests: Request[] = []; // variable locale pour affichage
+  
+  // Date actuelle pour le calendrier
+  currentMonth: Date = new Date(); // Date actuelle par défaut
+  daysInMonth: number[] = [];
 
   constructor(private requestsService: RequestsService) {}
 
   ngOnInit(): void {
-    this.loadRequests();
-    this.generateCalendarDays();
+    // Initialiser le calendrier pour le mois courant
+    this.initializeCalendar();
+    this.requestsService.requests$.subscribe((requests: Request[]) => {
+      this.requests = requests;
+      this.filterRequestsForCurrentMonth(); // met à jour filteredRequests
+      this.groupRequestsByDay();
+    });
   }
-
-  loadRequests(): void {
-    // Le service retourne directement un tableau, pas un Observable
-    this.requests = this.requestsService.getAllRequests();
-    this.groupRequestsByDate();
-  }
-
-  // Générer les jours du mois actuel
-  generateCalendarDays(): void {
+  
+  initializeCalendar(): void {
+    // Déterminer le nombre de jours dans le mois actuel
     const year = this.currentMonth.getFullYear();
     const month = this.currentMonth.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     
+    // Créer un tableau avec tous les jours du mois
     this.daysInMonth = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   }
-
-  // Grouper les demandes par date
-  groupRequestsByDate(): void {
-    this.requestsByMonth = {};
+  
+  filterRequestsForCurrentMonth(): void {
+    // L'admin doit voir toutes les demandes réelles, comme la page des demandes
+    this.filteredRequests = [...this.requests];
+    console.log(`Affichage de ${this.filteredRequests.length} demandes (toutes demandes réelles)`);
+  }
+  
+  groupRequestsByDay(): void {
+    // Réinitialiser la map
+    this.requestsByDay = new Map();
     
+    // Grouper les demandes par jour
     this.requests.forEach(request => {
+      let day: number | null = null;
+      
+      // Utiliser la date de création si disponible
       if (request.createdAt) {
-        const date = new Date(request.createdAt);
-        const dateKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-        
-        if (!this.requestsByMonth[dateKey]) {
-          this.requestsByMonth[dateKey] = [];
+        day = new Date(request.createdAt).getDate();
+      } 
+      // Sinon utiliser la date de la demande
+      else if (request.date) {
+        day = new Date(request.date).getDate();
+      }
+      
+      if (day !== null) {
+        if (!this.requestsByDay.has(day)) {
+          this.requestsByDay.set(day, []);
         }
-        
-        this.requestsByMonth[dateKey].push(request);
+        this.requestsByDay.get(day)?.push(request);
+        console.log(`Added request ${request.id} (${request.type}) to day ${day}`);
       }
     });
-  }
-
-  // Obtenir les demandes pour un jour spécifique
-  getRequestsForDay(day: number): Request[] {
-    const year = this.currentMonth.getFullYear();
-    const month = this.currentMonth.getMonth() + 1;
-    const dateKey = `${year}-${month}-${day}`;
     
-    return this.requestsByMonth[dateKey] || [];
+    // Afficher les jours qui ont des demandes pour le débogage
+    console.log('Jours avec des demandes:', Array.from(this.requestsByDay.keys()));
+  }
+  
+  getRequestsForDay(day: number): Request[] {
+    return this.requestsByDay.get(day) || [];
+  }
+  
+  changeMonth(increment: number): void {
+    const newMonth = new Date(this.currentMonth);
+    newMonth.setMonth(this.currentMonth.getMonth() + increment);
+    this.currentMonth = newMonth;
+
+    this.initializeCalendar();
+    this.filterRequestsForCurrentMonth();
+    this.groupRequestsByDay();
+  }
+  
+  getCurrentMonthName(): string {
+    return this.months[this.currentMonth.getMonth()] + ' ' + this.currentMonth.getFullYear();
   }
 
   // Obtenir la classe CSS en fonction du statut de la demande
   getStatusClass(status: string): string {
-    if (status === 'Approuvée' || status === 'admin_approved' || status === 'APPROVED') {
+    console.log('getStatusClass called with status:', status);
+    
+    // Normaliser le statut pour éviter les problèmes de casse ou d'accents
+    const normalizedStatus = status.toLowerCase();
+    
+    if (normalizedStatus.includes('approuv') || normalizedStatus === 'admin_approved' || normalizedStatus === 'approved') {
       return 'status-approved';
-    } else if (status === 'Rejetée' || status === 'admin_rejected' || status === 'chef_rejected' || status === 'REJECTED') {
+    } else if (normalizedStatus.includes('rejet') || normalizedStatus === 'admin_rejected' || normalizedStatus === 'chef_rejected' || normalizedStatus === 'rejected') {
       return 'status-rejected';
-    } else if (status === 'chef_approved' || status === 'CHEF_APPROVED') {
+    } else if (normalizedStatus.includes('chef') || normalizedStatus === 'chef_approved' || normalizedStatus === 'chef_approved') {
       return 'status-chef-approved';
     }
     return 'status-pending';
-  }
-
-  // Naviguer vers le mois précédent
-  previousMonth(): void {
-    this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() - 1, 1);
-    this.generateCalendarDays();
-  }
-
-  // Naviguer vers le mois suivant
-  nextMonth(): void {
-    this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 1);
-    this.generateCalendarDays();
   }
 
   // Afficher les détails d'une demande

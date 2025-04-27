@@ -4,6 +4,8 @@ import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { RequestsService } from '../requests.service';
 
+import { AuthService } from '../../../auth/auth.service';
+
 @Component({
   selector: 'app-advance-request',
   standalone: true,
@@ -19,7 +21,8 @@ export class AdvanceRequestComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private requestsService: RequestsService
+    private requestsService: RequestsService,
+    private authService: AuthService
   ) {
     this.advanceForm = new FormGroup({
       advanceAmount: new FormControl(0, [
@@ -70,7 +73,25 @@ export class AdvanceRequestComponent implements OnInit {
     if (this.requestId) {
       this.requestsService.updateAdvanceRequest(this.requestId, formData);
     } else {
-      this.requestsService.addAdvanceRequest(formData);
+      // Construction de l'objet Request pour addRequest
+      const currentUser = this.authService.currentUserValue;
+      const newRequest = {
+        requestType: 'advance',
+        id: Math.random().toString(36).substr(2, 9),
+        type: "Avance sur salaire",
+        date: new Date().toISOString(),
+        status: 'En attente',
+        userId: currentUser?.id || '',
+        details: {
+          amount: String(formValues.advanceAmount),
+          reason: formValues.advanceReason,
+          documents: formValues.attachments as any
+        },
+        description: `Demande d'avance sur salaire - ${formValues.advanceAmount} DT`,
+        createdAt: new Date().toISOString(),
+        user: currentUser
+      };
+      this.requestsService.addRequest(newRequest);
     }
     this.router.navigate(['/home/requests']);
   }

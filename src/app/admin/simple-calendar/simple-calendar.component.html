@@ -5,7 +5,7 @@
     <button class="nav-btn" (click)="changeMonth(-1)">
       <i class="fas fa-chevron-left"></i> Précédent
     </button>
-    <h3 class="current-month">{{ getCurrentMonthName() }}</h3>
+    <h3 class="current-month">{{ months[currentMonth.getMonth()] }} {{ currentMonth.getFullYear() }}</h3>
     <button class="nav-btn" (click)="changeMonth(1)">
       Suivant <i class="fas fa-chevron-right"></i>
     </button>
@@ -18,23 +18,18 @@
         {{ day }}
       </div>
       
-      <!-- Jours du mois (générés dynamiquement) -->
-      <ng-container *ngFor="let day of daysInMonth">
-        <div class="day">
-          <div class="day-header">{{ day }}</div>
-          <div class="day-content">
-            <!-- Demandes pour ce jour -->
-            <ng-container *ngFor="let request of getRequestsForDay(day)">
-              <div 
-                class="request-item" 
-                [ngClass]="getStatusClass(request.status)" 
-                (click)="viewRequestDetails(request)">
-                {{ request.type }} - {{ request.user?.firstname || 'Inconnu' }} {{ request.user?.lastname || '' }}
-              </div>
-            </ng-container>
+      <!-- Jours du mois -->
+      <div class="day" *ngFor="let day of daysInMonth">
+        <div class="day-header">{{ day }}</div>
+        <div class="day-content">
+          <div class="request-item" 
+               *ngFor="let request of getRequestsForDay(day)" 
+               [ngClass]="getStatusClass(request.status)"
+               (click)="viewRequestDetails(request)">
+            {{ request.type }} - {{ request.user?.firstname }}
           </div>
         </div>
-      </ng-container>
+      </div>
     </div>
   </div>
 
@@ -75,4 +70,25 @@
       </div>
     </div>
   </div>
+  
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-color status-approved"></span>
+      <span>Approuvée</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color status-rejected"></span>
+      <span>Rejetée</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color status-chef-approved"></span>
+      <span>Approuvée par le chef</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color status-pending"></span>
+      <span>En attente</span>
+    </div>
+  </div>
+  
+  <button class="return-btn" routerLink="/admin">Retour à l'accueil</button>
 </div>

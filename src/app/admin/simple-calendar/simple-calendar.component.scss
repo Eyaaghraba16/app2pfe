@@ -1,0 +1,216 @@
+.calendar-container {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .calendar-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    .current-month {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin: 0;
+    }
+    
+    .nav-btn {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      color: #007bff;
+      cursor: pointer;
+      padding: 8px 15px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      
+      &:hover {
+        background-color: #f0f7ff;
+      }
+      
+      i {
+        margin: 0 5px;
+      }
+    }
+  }
+
+  .calendar-wrapper {
+    margin-bottom: 20px;
+    overflow: auto;
+    
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      
+      .weekday {
+        text-align: center;
+        font-weight: 600;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+      }
+      
+      .day {
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        min-height: 100px;
+        padding: 5px;
+        
+        .day-header {
+          font-weight: 600;
+          text-align: center;
+          margin-bottom: 5px;
+          padding: 5px;
+          border-bottom: 1px solid #e9ecef;
+        }
+        
+        .day-content {
+          .request-item {
+            margin-bottom: 5px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            
+            &:hover {
+              opacity: 0.9;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .status-approved {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .status-rejected {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .status-chef-approved {
+    background-color: #ffc107;
+    color: #212529;
+  }
+  
+  .status-pending {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .request-details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    
+    .modal-content {
+      background-color: #fff;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        
+        h3 {
+          margin: 0;
+          font-weight: 600;
+        }
+        
+        .close-btn {
+          background: none;
+          border: none;
+          font-size: 1.5rem;
+          cursor: pointer;
+          color: #6c757d;
+          
+          &:hover {
+            color: #343a40;
+          }
+        }
+      }
+      
+      .modal-body {
+        padding: 20px;
+        
+        .request-info {
+          p {
+            margin-bottom: 10px;
+            
+            strong {
+              font-weight: 600;
+              margin-right: 5px;
+            }
+            
+            span {
+              padding: 2px 6px;
+              border-radius: 4px;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        margin-right: 8px;
+      }
+    }
+  }
+  
+  .return-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    
+    &:hover {
+      background-color: #5a6268;
+    }
+  }
+}

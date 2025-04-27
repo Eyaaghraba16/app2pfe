@@ -34,9 +34,14 @@ export class NotificationsComponent implements OnInit {
       console.log('Notifications filtrées:', this.filteredNotifications);
     });
 
-    // S'abonner au compteur de notifications non lues
-    this.notificationService.unreadCount$.subscribe(count => {
-      this.unreadCount = count;
+    // Met à jour le compteur de notifications non lues uniquement pour l'utilisateur courant
+    this.unreadCount = 0;
+    this.notificationService.notifications$.subscribe(notifications => {
+      this.notifications = notifications;
+      this.filterNotifications();
+      // Met à jour le compteur uniquement sur les notifications filtrées non lues
+      this.unreadCount = this.filteredNotifications.filter(n => !n.read).length;
+      console.log('Notifications filtrées:', this.filteredNotifications);
     });
     
     // Afficher les informations de l'utilisateur actuel pour le débogage
@@ -45,83 +50,11 @@ export class NotificationsComponent implements OnInit {
     console.log('Est chef:', this.authService.isChef());
   }
   
-  // Filtrer les notifications en fonction des identifiants cibles et du contenu des messages
+  // Filtrer les notifications pour afficher uniquement celles destinées à l'utilisateur connecté
   private filterNotifications(): void {
-    const isAdmin = this.authService.isAdmin();
-    const isChef = this.authService.isChef();
     const currentUser = this.authService.currentUserValue;
     const userId = currentUser?.id || '';
-    
-    console.log('Filtrage des notifications:');
-    console.log('- isAdmin:', isAdmin);
-    console.log('- isChef:', isChef);
-    console.log('- userId:', userId);
-    console.log('- Toutes les notifications:', this.notifications);
-    
-    // Filtrer les notifications en fonction des identifiants cibles et du contenu des messages
-    this.filteredNotifications = this.notifications.filter(notification => {
-      // Vérifier l'identifiant cible de la notification
-      const targetId = notification.targetUserId || '';
-      const message = notification.message.toLowerCase();
-      console.log('- Notification:', notification.message, 'targetId:', targetId);
-      
-      // Analyser le contenu du message pour déterminer à qui il est destiné
-      const isEmployeeNotification = message.includes('votre demande') || 
-                                    (message.includes('a été approuvé') && !message.includes('par le chef'));
-      const isAdminNotification = message.startsWith('vous avez') && (message.includes('approuvé') || message.includes('rejeté'));
-      const isChefNotification = !isAdminNotification && message.includes('chef') && (message.includes('approuvé') || message.includes('rejeté'));
-      
-      let visible = false;
-      
-      // Si c'est un admin
-      if (isAdmin) {
-        // L'admin ne doit pas voir les notifications destinées aux employés
-        if (isEmployeeNotification) {
-          visible = false;
-        }
-        // L'admin voit les notifications qui lui sont explicitement destinées
-        else if (targetId !== '') {
-          visible = targetId === 'admin-approval' || 
-                   targetId === 'admin-rejection' || 
-                   targetId === 'others-admin-approval';
-        }
-        // Pour les notifications du backend sans targetId
-        else {
-          visible = !isEmployeeNotification && !isChefNotification;
-        }
-      }
-      // Si c'est un chef
-      else if (isChef) {
-        // Le chef ne doit pas voir les notifications destinées aux employés ou à l'admin
-        if (isEmployeeNotification || isAdminNotification) {
-          visible = false;
-        }
-        // Le chef voit les notifications qui lui sont explicitement destinées
-        else if (targetId !== '') {
-          visible = targetId === 'chef-approval' || 
-                   targetId === 'chef-rejection' || 
-                   targetId === 'others-chef-approval';
-        }
-        // Pour les notifications du backend sans targetId
-        else {
-          visible = isChefNotification || (!isEmployeeNotification && !isAdminNotification);
-        }
-      }
-      // Pour les employés
-      else {
-        // Les employés voient uniquement les notifications qui leur sont destinées
-        if (targetId !== '') {
-          visible = targetId === userId;
-        }
-        // Pour les notifications du backend sans targetId
-        else {
-          visible = isEmployeeNotification || (!isAdminNotification && !isChefNotification);
-        }
-      }
-      
-      console.log('  -> Visible:', visible);
-      return visible;
-    });
+    this.filteredNotifications = this.notifications.filter(notification => notification.targetUserId === userId);
   }
 
 

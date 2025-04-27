@@ -4,6 +4,8 @@
   </div>
 
   <form (ngSubmit)="onSubmit()" #leaveForm="ngForm">
+    <div *ngIf="submitError" class="alert alert-danger">{{ submitError }}</div>
+    <div *ngIf="submitSuccess" class="alert alert-success">{{ submitSuccess }}</div>
     <div class="form-group">
       <label>Type de congé</label>
       <select [(ngModel)]="request.leaveType" name="leaveType" required (change)="onLeaveTypeChange()">
@@ -53,9 +55,9 @@
         <i class='bx bx-x'></i>
         Annuler
       </button>
-      <button type="submit" class="btn-submit" [disabled]="!leaveForm.form.valid">
+      <button type="submit" class="btn-submit" [disabled]="!leaveForm.form.valid || isSubmitting">
         <i class='bx bx-check'></i>
-        {{ editMode ? 'Enregistrer' : 'Soumettre' }}
+        {{ editMode ? 'Enregistrer' : isSubmitting ? 'Envoi...' : 'Soumettre' }}
       </button>
     </div>
   </form>

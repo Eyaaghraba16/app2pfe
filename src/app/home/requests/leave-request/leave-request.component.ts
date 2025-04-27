@@ -4,14 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RequestsService } from '../requests.service';
 
+import { AuthService } from '../../../auth/auth.service';
+
 @Component({
   selector: 'app-leave-request',
+  templateUrl: './leave-request.component.html',
+  styleUrls: ['./leave-request.component.scss'],
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './leave-request.component.html',
-  styleUrls: ['./leave-request.component.scss']
 })
 export class LeaveRequestComponent implements OnInit {
+  // Données du formulaire
+  // Données du formulaire et état
   request = {
     startDate: '',
     endDate: '',
@@ -20,14 +24,20 @@ export class LeaveRequestComponent implements OnInit {
     reason: '',
     documents: null as File | null
   };
-
-  editMode = false;
+  editMode: boolean = false;
   requestId: string | null = null;
+
+  // Feedback utilisateur
+  isSubmitting: boolean = false;
+  submitError: string | null = null;
+  submitSuccess: string | null = null;
+
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private requestsService: RequestsService
+    private requestsService: RequestsService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -83,12 +93,57 @@ export class LeaveRequestComponent implements OnInit {
   }
 
   onSubmit() {
+    this.isSubmitting = true;
+    this.submitError = null;
+    this.submitSuccess = null;
     if (this.editMode && this.requestId) {
-      this.requestsService.updateLeaveRequest(this.requestId, this.request);
+      // On suppose que updateLeaveRequest retourne un Observable, sinon il faut adapter le service !
+      this.requestsService.updateLeaveRequest(this.requestId, this.request).subscribe({
+        next: () => {
+          this.submitSuccess = "Demande modifiée avec succès.";
+          this.isSubmitting = false;
+          setTimeout(() => this.router.navigate(['/home/requests']), 1000);
+        },
+        error: (_err: any) => {
+          this.submitError = "Erreur lors de la modification de la demande.";
+          this.isSubmitting = false;
+        }
+      });
     } else {
-      this.requestsService.addLeaveRequest(this.request);
+      // Construction de l'objet Request pour addRequest
+      const currentUser = this.authService.currentUserValue;
+      const newRequest = {
+        requestType: 'leave',
+        id: Math.random().toString(36).substr(2, 9),
+        type: "Congé",
+        date: new Date().toISOString(),
+        status: 'En attente',
+        userId: currentUser?.id || '',
+        details: {
+          startDate: this.request.startDate,
+          endDate: this.request.endDate,
+          leaveType: this.request.leaveType,
+          dayPart: this.request.dayPart,
+          reason: this.request.reason,
+          documents: this.request.documents as any
+        },
+        description: `Demande de congé du ${this.request.startDate} au ${this.request.endDate}`,
+        createdAt: new Date().toISOString(),
+        user: currentUser,
+      };
+      // On suppose que addRequest retourne un Observable, sinon il faut adapter le service !
+      this.requestsService.addRequest(newRequest).subscribe({
+        next: () => {
+          this.submitSuccess = "Demande envoyée avec succès.";
+          this.isSubmitting = false;
+          setTimeout(() => this.router.navigate(['/home/requests']), 1000);
+        },
+        error: (_err: any) => {
+          this.submitError = "Erreur lors de l'envoi de la demande.";
+          this.isSubmitting = false;
+        }
+      });
     }
-    this.router.navigate(['/home/requests']);
   }
 
   cancel() {

@@ -23,7 +23,7 @@ export interface Request {
   response?: string;
   processedBy?: string;
   
-  createdAt?: Date;
+  createdAt: string;
   updated_at?: Date;
   user?: {
     id: string;

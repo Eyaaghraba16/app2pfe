@@ -23,6 +23,9 @@ import { LoanRequestComponent } from './home/requests/loan-request/loan-request.
 import { AdvanceRequestComponent } from './home/requests/advance-request/advance-request.component';
 import { DocumentRequestComponent } from './home/requests/document-request/document-request.component';
 import { ChefViewComponent } from './chef/chef-view.component';
+import { SimpleCalendarComponent } from './admin/simple-calendar/simple-calendar.component';
+import { DirectCalendarComponent } from './admin/direct-calendar/direct-calendar.component';
+import { RequestCalendarComponent } from './admin/request-calendar/request-calendar.component';
 
 const routes: Routes = [
   { path: '', component: MinimalComponent },
@@ -47,6 +50,20 @@ const routes: Routes = [
   { 
     path: 'admin-test', 
     component: BasicAdminComponent
+  },
+  {
+    path: 'admin/calendar',
+    component: SimpleCalendarComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['admin'] }
+  },
+  {
+    path: 'admin/direct-calendar',
+    component: DirectCalendarComponent
+  },
+  {
+    path: 'admin/request-calendar',
+    component: RequestCalendarComponent
   },
   {
     path: 'home',

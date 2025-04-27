@@ -19,6 +19,11 @@ export interface Notification {
 export class NotificationService {
   private socket: Socket;
   private notificationsSubject = new BehaviorSubject<Notification[]>([]);
+
+  // Méthode publique pour accéder à la liste des notifications (pour éviter l'accès direct à notificationsSubject)
+  public getNotifications(): Notification[] {
+    return this.notificationsSubject.value;
+  }
   private unreadCountSubject = new BehaviorSubject<number>(0);
   
   public notifications$ = this.notificationsSubject.asObservable();

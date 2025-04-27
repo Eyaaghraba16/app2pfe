@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../../auth/auth.service';
 import { RequestsService } from '../requests.service';
 
 @Component({
@@ -31,7 +32,8 @@ export class DocumentRequestComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private requestsService: RequestsService
+    private requestsService: RequestsService,
+    private authService: AuthService
   ) {
     this.initForm();
   }
@@ -79,7 +81,29 @@ export class DocumentRequestComponent implements OnInit {
     if (this.requestId) {
       this.requestsService.updateDocumentRequest(this.requestId, formData);
     } else {
-      this.requestsService.addDocumentRequest(formData);
+      // Construction de l'objet Request pour addRequest
+      const currentUser = this.authService.currentUserValue;
+      const newRequest = {
+        requestType: 'document',
+        id: Math.random().toString(36).substr(2, 9),
+        type: "Document administratif",
+        date: new Date().toISOString(),
+        status: 'En attente',
+        userId: currentUser?.id || '',
+        details: {
+  documentType: formData.documentType,
+  reason: formData.reason,
+  urgency: formData.urgency,
+  purpose: formData.purpose,
+  language: formData.language,
+  copies: String(formData.copies),
+  comments: formData.comments
+},
+        description: `Demande de document administratif - ${formData.documentType}`,
+        createdAt: new Date().toISOString(),
+        user: currentUser
+      };
+      this.requestsService.addRequest(newRequest);
     }
     this.router.navigate(['/home/requests']);
   }
